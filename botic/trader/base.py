@@ -1,12 +1,13 @@
 import os
 import importlib
 import configparser
-from .base import BaseBot
+from abc import ABCMeta, abstractmethod
+from ..basebot import BaseBot
 
 class BaseTrader(BaseBot):
-    """ Base class of abstract methods that are to be implented by traders """
-    def __init__(self, config_path: str) -> None:
-        super().__init__(config_path, do_print=True)
+    """Base class of abstract methods that are to be implented by traders"""
+    def __init__(self, config) -> None:
+        super().__init__(config, do_print=True)
         self._init_lock()
         self._init_cache()
         self._load_exchange()
@@ -25,38 +26,42 @@ class BaseTrader(BaseBot):
         """
 
     def _load_exchange(self) -> None:
-        """ Load the exchange module specified in the config.
-            Exchange config must follow this format for auto-import:
-                config:
-                    [exchange]
-                    exchange_module = CoinbasePro
-                code:
-                    exchange/coinbasepro.py -> class CoinbasePro(ExchangeBase): ...
+        """Load the exchange module specified in the config.
+
+        Exchange config must follow this format for auto-import:
+            config:
+                [exchange]
+                exchange_module = CoinbasePro
+            code:
+                exchange/coinbasepro.py -> class CoinbasePro(ExchangeBase): ...
         """
-        mod = importlib.import_module('exchange.{}'.format(self.exchange.lower()))
+        mod_path = 'botic.exchange.{}'.format(self.exchange_module.lower())
+        mod = importlib.import_module(mod_path)
         obj = getattr(mod, self.exchange, None)
         if not obj:
-            raise Exception('Unknown Exchange: {}'.format(self.exchange))
+            raise Exception('Unknown exchange module: {}'.format(self.exchange_module))
         self.exchange = obj(config)
 
 
     @abstractmethod
     def configure(self) -> None:
-        """ Method to convert key,value pairs set from the [trader] config section.
-        """
+        """Method to convert key,value pairs set from the [trader] config section."""
         pass
 
     @abstractmethod
-    def run_trader(self) -> None:
+    def run_trading_algorithm(self) -> None:
+        """Run the traders main algorithim. This is responsible for interacting with the exchange
+        to fetch data and place buys/sells.
+        """
         pass
 
     def assert_required(self) -> None:
-        """ Assert required values are set. If not, then it is likely a programming error.
-        """
+        """Assert required values are set. If not, then it is likely a programming error"""
         assert self.wallet is not None, 'Wallet must be set.'
         assert self.current_price is not None, 'Current price must be set.'
 
-    def run(self): -> None:
+    def run(self) -> None:
+        """Main program loop"""
         # Throttle startups randomly
         time.sleep(uniform(1, 5))
         while 1:
@@ -64,7 +69,7 @@ class BaseTrader(BaseBot):
                 self.logit('PAUSE')
                 time.sleep(30)
                 continue
-            self.run_trader()
+            self.run_trading_algorithm()
             self.assert_required()
             self.logit('price:{} fees:{}/{} wallet:{} open-sells:{} target:{} can-buy:{}'.format(
                 self.current_price,

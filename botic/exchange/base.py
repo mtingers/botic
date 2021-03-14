@@ -1,4 +1,5 @@
 import typing as t
+from abc import ABCMeta, abstractmethod
 from .base import BaseBot
 
 class ProductInfo:
@@ -68,8 +69,8 @@ class BaseExchange(BaseBot):
     Attributes:
         config (configparse.ConfigParser): ConfigParser object from file specified by config_path
     """
-    def __init__(self, config_path: str) -> None:
-        super().__init__(config_path, do_print=False)
+    def __init__(self, config: configparse.ConfigParser) -> None:
+        super().__init__(config, do_print=False)
         self.client = None
 
     @abstractmethod
