@@ -1,16 +1,17 @@
 import os
+import time
 import importlib
 import configparser
+from random import uniform
 from abc import ABCMeta, abstractmethod
+from filelock import FileLock
 from ..basebot import BaseBot
+from ..botic import configure
 
 class BaseTrader(BaseBot):
     """Base class of abstract methods that are to be implented by traders"""
     def __init__(self, config) -> None:
-        super().__init__(config, do_print=True)
-        self._init_lock()
-        self._init_cache()
-        self._load_exchange()
+        super().__init__(config)
         """
         self.logit(
             '{} precision:{} usd-precision:{} current-fees:{}/{} min-size:{} max-size:{}'.format(
@@ -25,6 +26,12 @@ class BaseTrader(BaseBot):
             ))
         """
 
+    def _init(self):
+        self.configure()
+        self._init_lock()
+        self._init_cache()
+        self._load_exchange()
+
     def _load_exchange(self) -> None:
         """Load the exchange module specified in the config.
 
@@ -37,11 +44,12 @@ class BaseTrader(BaseBot):
         """
         mod_path = 'botic.exchange.{}'.format(self.exchange_module.lower())
         mod = importlib.import_module(mod_path)
-        obj = getattr(mod, self.exchange, None)
+        obj = getattr(mod, self.exchange_module, None)
         if not obj:
             raise Exception('Unknown exchange module: {}'.format(self.exchange_module))
-        self.exchange = obj(config)
-
+        self.exchange = obj(self.config)
+        self.exchange.authenticate()
+        configure(self.exchange, do_print=False)
 
     @abstractmethod
     def configure(self) -> None:
@@ -55,13 +63,9 @@ class BaseTrader(BaseBot):
         """
         pass
 
-    def assert_required(self) -> None:
-        """Assert required values are set. If not, then it is likely a programming error"""
-        assert self.wallet is not None, 'Wallet must be set.'
-        assert self.current_price is not None, 'Current price must be set.'
-
     def run(self) -> None:
         """Main program loop"""
+        self._init()
         # Throttle startups randomly
         time.sleep(uniform(1, 5))
         while 1:
@@ -70,16 +74,6 @@ class BaseTrader(BaseBot):
                 time.sleep(30)
                 continue
             self.run_trading_algorithm()
-            self.assert_required()
-            self.logit('price:{} fees:{}/{} wallet:{} open-sells:{} target:{} can-buy:{}'.format(
-                self.current_price,
-                self.fee_taker,
-                self.fee_maker,
-                self.wallet,
-                self.total_open_orders,
-                self.current_price_target,
-                self.can_buy,
-            ))
             time.sleep(self.sleep_seconds)
 
 

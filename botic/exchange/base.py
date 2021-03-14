@@ -1,6 +1,8 @@
+from decimal import Decimal
 import typing as t
 from abc import ABCMeta, abstractmethod
-from .base import BaseBot
+import configparser
+from ..basebot import BaseBot
 
 class ProductInfo:
     """ Crypto product information class that stores some important information for making buy/sell
@@ -48,6 +50,7 @@ class ProductInfo:
             'limit_only':False,
             'post_only':False,
             'trading_disabled':False,
+            'margin_enabled':False,
         }
         self.digest()
 
@@ -57,7 +60,11 @@ class ProductInfo:
             possible.
         """
         for key,val in self.product_info.items():
-            setattr(self, key, type(config[key])(val))
+            try:
+                cast = type(self.config[key])
+                setattr(self, key, cast(val))
+            except Exception as err:
+                print(err)
 
 class BaseExchange(BaseBot):
     """ Base class of abstractmethods to implement for each exchange. It is important to note that
@@ -67,10 +74,10 @@ class BaseExchange(BaseBot):
         config_path (str): The path to the configuration file
 
     Attributes:
-        config (configparse.ConfigParser): ConfigParser object from file specified by config_path
+        config (configparser.ConfigParser): ConfigParser object from file specified by config_path
     """
-    def __init__(self, config: configparse.ConfigParser) -> None:
-        super().__init__(config, do_print=False)
+    def __init__(self, config: configparser.ConfigParser) -> None:
+        super().__init__(config)
         self.client = None
 
     @abstractmethod

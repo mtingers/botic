@@ -1,12 +1,13 @@
 from distutils.core import setup
 import setuptools
+from setuptools import find_packages
 
 setup(
     name='Botic',
-    version='0.0.4',
+    version='0.0.7',
     author='Matth Ingersoll',
     author_email='matth@mtingers.com',
-    packages=['botic',],
+    packages=find_packages(),
     license='BSD 2-Clause License',
     long_description='None', #open('README.md').read(),
     url='https://github.com/mtingers/botic',

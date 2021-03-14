@@ -3,6 +3,8 @@ import sys
 import time
 import typing as t
 from random import uniform
+from datetime import datetime
+from filelock import FileLock
 import importlib
 
 class BaseBot:
@@ -14,7 +16,7 @@ class BaseBot:
         config_path (str): The path to the configuration file
 
     Attributes:
-        config (configparse.ConfigParser): ConfigParse object from config_path
+        config (configparser.ConfigParser): ConfigParse object from config_path
     """
     def __init__(self, config) -> None:
         self.config = config

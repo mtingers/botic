@@ -1,5 +1,6 @@
-from exchange.base import BaseExchange, ProductInfo
-from exchange.exceptions import *
+from .base import BaseExchange, ProductInfo, Decimal
+from .exceptions import *
+import typing as t
 import cbpro
 
 class CoinbasePro(BaseExchange):
@@ -8,11 +9,11 @@ class CoinbasePro(BaseExchange):
             raise exception_to_raise(response['message'])
 
     def authenticate(self) -> cbpro.AuthenticatedClient:
-        key = self.config['auth'].get('key')
-        passphrase = self.config['auth'].get('passphrase')
-        b64secret = self.config['auth'].get('b64secret')
+        key = self.config['exchange'].get('key')
+        passphrase = self.config['exchange'].get('passphrase')
+        b64secret = self.config['exchange'].get('b64secret')
         self.client = cbpro.AuthenticatedClient(key, b64secret, passphrase)
-        test = self.client.get_accounts():
+        test = self.client.get_accounts()
         self._api_response_check(test, ExchangeAuthError)
         return self.client
 
@@ -33,8 +34,8 @@ class CoinbasePro(BaseExchange):
                 break
         assert self.product_info is not None, 'Product info must be set.'
         # Set how many decimal places/precision price and size can have
-        self.size_decimal_places = self.product_info.base_increment.split('1')[0].count('0')
-        self.usd_decimal_places = self.product_info.quote_increment.split('1')[0].count('0')
+        self.size_decimal_places = str(self.product_info.base_increment).split('1')[0].count('0')
+        self.usd_decimal_places = str(self.product_info.quote_increment).split('1')[0].count('0')
         return self.product_info
 
     def get_usd_wallet(self) -> Decimal:
