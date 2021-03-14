@@ -10,7 +10,7 @@ def parse_datetime(value: str) -> str:
         value (str): String representation of a date and time
 
     Returns:
-		str: A new string without milliseconds and timezone
+        str: A new string without milliseconds and timezone
     """
     return str(value).split('.')[0].split('Z')[0]
 
@@ -23,7 +23,7 @@ def str2bool(value: str) -> bool:
 
     Returns:
         bool: True or False
-	"""
+    """
     return value.lower() in ("yes", "true", "t", "1")
 
 

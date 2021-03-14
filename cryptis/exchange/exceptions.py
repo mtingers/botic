@@ -1,38 +1,38 @@
 
 class PriceError(Exception):
-	pass
+    pass
 
 class ExchangeError(Exception):
-	pass
+    pass
 
 class ExchangeGetOrdersError(Exception):
-	pass
+    pass
 
 class ExchangeAuthError(Exception):
-	pass
+    pass
 
 class ExchangeBuyLimitError(Exception):
-	pass
+    pass
 
 class ExchangeBuyMarketError(Exception):
-	pass
+    pass
 
 class ExchangeSellLimitError(Exception):
-	pass
+    pass
 
 class ExchangeSellMarketError(Exception):
-	pass
+    pass
 
 class ExchangeProductInfoError(Exception):
-	pass
+    pass
 
 class ExchangeCancelError(Exception):
-	pass
+    pass
 
 class ExchangeFeesError(Exception):
-	pass
+    pass
 
 class ExchangeWalletError(Exception):
-	pass
+    pass
 
 

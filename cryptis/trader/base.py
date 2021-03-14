@@ -40,19 +40,19 @@ class BaseTrader(BaseBot):
         self.exchange = obj(config)
 
 
-	@abstractmethod
-	def configure(self) -> None:
-		""" Method to convert key,value pairs set from the [trader] config section.
-		"""
-		pass
+    @abstractmethod
+    def configure(self) -> None:
+        """ Method to convert key,value pairs set from the [trader] config section.
+        """
+        pass
 
     @abstractmethod
     def run_trader(self) -> None:
         pass
 
-	def assert_required(self) -> None:
-		""" Assert required values are set. If not, then it is likely a programming error.
-		"""
+    def assert_required(self) -> None:
+        """ Assert required values are set. If not, then it is likely a programming error.
+        """
         assert self.wallet is not None, 'Wallet must be set.'
         assert self.current_price is not None, 'Current price must be set.'
 
@@ -65,7 +65,7 @@ class BaseTrader(BaseBot):
                 time.sleep(30)
                 continue
             self.run_trader()
-			self.assert_required()
+            self.assert_required()
             self.logit('price:{} fees:{}/{} wallet:{} open-sells:{} target:{} can-buy:{}'.format(
                 self.current_price,
                 self.fee_taker,

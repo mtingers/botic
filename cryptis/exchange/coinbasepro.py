@@ -58,7 +58,7 @@ class CoinbasePro(BaseExchange):
                 order['price'] = Decimal(order['price'])
                 order['size'] = Decimal(order['size'])
                 self.open_sells.append(order)
-		return self.open_sells
+        return self.open_sells
 
     def get_fees(self) -> t.Tuple[Decimal, Decimal, Decimal]:
         """ pip cbpro version doesn't have my get_fees() patch, so manually query it """
