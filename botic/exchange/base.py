@@ -5,8 +5,8 @@ import configparser
 from ..basebot import BaseBot
 
 class ProductInfo:
-    """ Crypto product information class that stores some important information for making buy/sell
-        calculations.
+    """Crypto product information class that stores some important information for making buy/sell
+    calculations.
 
     Args:
         config_path (str): The path to the configuration file
@@ -55,9 +55,8 @@ class ProductInfo:
         self.digest()
 
     def	digest(self) -> None:
-        """ This can be overridden for handling different exchanges
-            To do so, map the exchange product info to the self.config values as closely as
-            possible.
+        """This can be overridden for handling different exchanges
+        To do so, map the exchange product info to the self.config values as closely as possible.
         """
         for key,val in self.product_info.items():
             try:
@@ -67,8 +66,8 @@ class ProductInfo:
                 print(err)
 
 class BaseExchange(BaseBot):
-    """ Base class of abstractmethods to implement for each exchange. It is important to note that
-        each method sets AND returns the same value (e.g. self.price, return self.price).
+    """Base class of abstractmethods to implement for each exchange. It is important to note that
+    each method sets AND returns the same value (e.g. self.price, return self.price).
 
     Args:
         config_path (str): The path to the configuration file
@@ -82,7 +81,7 @@ class BaseExchange(BaseBot):
 
     @abstractmethod
     def authenticate(self):
-        """ Authenticate/connect to the exchange using credentials from the config
+        """Authenticate/connect to the exchange using credentials from the config
 
         Sets:
             self.client
@@ -97,7 +96,7 @@ class BaseExchange(BaseBot):
 
     @abstractmethod
     def get_price(self) -> Decimal:
-        """ Get latest price of coin from exchange
+        """Get latest price of coin from exchange
 
         Sets:
             self.price
@@ -116,8 +115,8 @@ class BaseExchange(BaseBot):
 
     @abstractmethod
     def get_product_info(self) -> ProductInfo:
-        """ Build ProductInfo object from API response and set price and size precision (how many
-            decimal places each can have).
+        """Build ProductInfo object from API response and set price and size precision (how many
+        decimal places each can have).
 
         Sets:
             self.size_decimal_places
@@ -136,7 +135,7 @@ class BaseExchange(BaseBot):
 
     @abstractmethod
     def get_usd_wallet(self) -> Decimal:
-        """ Get the value of USD wallet
+        """Get the value of USD wallet
 
         Sets:
             self.wallet
@@ -155,7 +154,7 @@ class BaseExchange(BaseBot):
 
     @abstractmethod
     def get_open_sells(self) -> t.List[t.Mapping[str, Decimal]]:
-        """ Query exchange for an active list of open sell orders.
+        """Query exchange for an active list of open sell orders.
 
         Sets:
             self.open_sells
@@ -173,7 +172,7 @@ class BaseExchange(BaseBot):
 
     @abstractmethod
     def get_fees(self) -> t.Tuple[Decimal, Decimal]:
-        """ Get current maker and taker fees and optionally USD volume
+        """Get current maker and taker fees and optionally USD volume
 
         Sets:
             self.maker_fee
@@ -193,7 +192,7 @@ class BaseExchange(BaseBot):
 
     @abstractmethod
     def buy_limit(self, price: Decimal, size: Decimal) -> dict:
-        """ Place a buy limit order
+        """Place a buy limit order
 
         Args:
             price (Decimal): Price per crypto
@@ -215,7 +214,7 @@ class BaseExchange(BaseBot):
 
     @abstractmethod
     def buy_market(self, price: Decimal) -> dict:
-        """ Place a buy market order
+        """Place a buy market order
 
         Args:
             funds (Decimal): How much of your wallet to use
@@ -236,7 +235,7 @@ class BaseExchange(BaseBot):
 
     @abstractmethod
     def sell_limit(self, price: Decimal, size: Decimal) -> dict:
-        """ Place a sell limit order
+        """Place a sell limit order
 
         Args:
             price (Decimal): Price per crypto
@@ -258,7 +257,7 @@ class BaseExchange(BaseBot):
 
     @abstractmethod
     def sell_market(self, price: Decimal, size: Decimal) -> dict:
-        """ Place a sell market order
+        """Place a sell market order
 
         Args:
             price (Decimal): Price per crypto
@@ -280,7 +279,7 @@ class BaseExchange(BaseBot):
 
     @abstractmethod
     def cancel(self, order_id: str) -> bool:
-        """ Cancel an order by it's ID
+        """Cancel an order by it's ID
 
         Args:
             order_id (str): The order ID to cancel
@@ -301,7 +300,7 @@ class BaseExchange(BaseBot):
 
     @abstractmethod
     def get_order(self, order_id: str) -> dict:
-        """ Get order by ID
+        """Get order by ID
 
         Args:
             order_id (str): The order ID to get
