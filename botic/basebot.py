@@ -5,9 +5,10 @@ import typing as t
 from random import uniform
 from datetime import datetime
 from filelock import FileLock
+from abc import ABCMeta
 import importlib
 
-class BaseBot:
+class BaseBot(metaclass=ABCMeta):
     """The base class for exchanges and trading bots
 
     See CONFIG_DEFAULTS for more information on attributes that are set during _configure().
