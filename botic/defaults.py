@@ -41,6 +41,6 @@ CONFIG_DEFAULTS = {
     ],
     'debug': [
         ('debug_response', bool, False),
-        ('debug_log', str, 'simplebot-debug.log'),
+        ('debug_log', str, 'botic-debug.log'),
     ],
 }
