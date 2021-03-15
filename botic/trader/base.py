@@ -1,32 +1,24 @@
+"""Base class of abstract methods that are to be implented by traders"""
 import os
 import time
 import importlib
-import configparser
 from random import uniform
-from abc import ABCMeta, abstractmethod
-from filelock import FileLock
+from abc import abstractmethod
 from ..basebot import BaseBot
 from ..botic import configure
 
 class BaseTrader(BaseBot):
     """Base class of abstract methods that are to be implented by traders"""
+    # pylint: disable=too-many-instance-attributes
     def __init__(self, config) -> None:
+        self.exchange_module = None
+        self.pause_file = None
+        self.sleep_seconds = None
+        self.exchange = None
         super().__init__(config)
-        """
-        self.logit(
-            '{} precision:{} usd-precision:{} current-fees:{}/{} min-size:{} max-size:{}'.format(
-                self.coin, self.size_decimal_places, self.usd_decimal_places, self.fee_taker,
-                self.fee_maker, self.min_size, self.max_size
-            ))
-        self.logit(
-            '{} sleep_seconds:{} sell_at_percent:{} max_sells_outstanding:{} '
-            'max_buys_per_hour:{}'.format(
-                self.coin, self.sleep_seconds, self.sell_at_percent,
-                self.max_sells_outstanding, self.max_buys_per_hour
-            ))
-        """
 
-    def _init(self):
+    def _init(self) -> None:
+        """Initialize configuration, lock, cache and load exchange"""
         self.configure()
         self._init_lock()
         self._init_cache()
@@ -54,14 +46,12 @@ class BaseTrader(BaseBot):
     @abstractmethod
     def configure(self) -> None:
         """Method to convert key,value pairs set from the [trader] config section."""
-        pass
 
     @abstractmethod
     def run_trading_algorithm(self) -> None:
         """Run the traders main algorithim. This is responsible for interacting with the exchange
         to fetch data and place buys/sells.
         """
-        pass
 
     def run(self) -> None:
         """Main program loop"""
@@ -75,5 +65,3 @@ class BaseTrader(BaseBot):
                 continue
             self.run_trading_algorithm()
             time.sleep(self.sleep_seconds)
-
-

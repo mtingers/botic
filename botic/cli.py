@@ -7,11 +7,12 @@ from shlex import quote
 from .botic import Botic
 
 def usage():
+    """Prints the usage information"""
     print('{} <config-file>'.format(sys.argv[0]))
-    exit(1)
-
+    sys.exit(1)
 
 def main_persist():
+    """Run botic in a infinite loop"""
     if len(sys.argv) != 2:
         usage()
     try:
@@ -23,6 +24,7 @@ def main_persist():
         print('Exiting...')
 
 def main() -> None:
+    """Run botic"""
     if len(sys.argv) != 2:
         usage()
     config_path = sys.argv[1]
@@ -31,4 +33,3 @@ def main() -> None:
 
 if __name__ == '__main__':
     main()
-

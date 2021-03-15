@@ -1,21 +1,22 @@
 """Main entry point to load configuration and classes"""
 import os
-import sys
 import time
-import typing as t
-from random import uniform
 import configparser
 import importlib
-from .util import str2bool, configure
+from .util import configure
 
 os.environ['TZ'] = 'UTC'
 time.tzset()
 
 class Botic:
+    """Botic base class to setup and start the trader"""
+    # pylint: disable=too-few-public-methods
     def __init__(self, config_path: str, do_print=True) -> None:
         self.config = configparser.ConfigParser()
         self.config.read(config_path)
         configure(self, do_print=do_print)
+        self.trader = None
+        self.trader_module = None
         self._setup_trader()
 
     def _setup_trader(self) -> None:
@@ -40,5 +41,3 @@ class Botic:
     def run(self) -> None:
         """Entry point to start the bot"""
         self.trader.run()
-
-

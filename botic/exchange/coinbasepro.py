@@ -1,12 +1,28 @@
-from .base import BaseExchange, ProductInfo, Decimal
-from .exceptions import *
+"""CoinbasePro exchange module"""
+import configparser
 import typing as t
 import cbpro
+from .exceptions import ExchangeError, ExchangeGetOrdersError, ExchangeAuthError
+from .exceptions import ExchangeBuyLimitError, ExchangeBuyMarketError, ExchangeSellLimitError
+from .exceptions import ExchangeSellMarketError, ExchangeProductInfoError, ExchangeCancelError
+from .exceptions import ExchangeFeesError, ExchangeWalletError
+from .base import BaseExchange, ProductInfo, Decimal
+
+def _api_response_check(response, exception_to_raise):
+    """Raise exception_to_raise if API response contains 'message'. If response['message']
+    exists, this is _always_ (I think) and error scenario with CoinbasePro
+    """
+    if 'message' in response:
+        raise exception_to_raise(response['message'])
 
 class CoinbasePro(BaseExchange):
-    def _api_response_check(self, response, exception_to_raise):
-        if 'message' in response:
-            raise exception_to_raise(response['message'])
+    """CoinbasePro exchange"""
+    # pylint: disable=too-many-instance-attributes
+    def __init__(self, config: configparser.ConfigParser) -> None:
+        self.usd_decimal_places = 2
+        self.size_decimal_places = 8
+        self.coin = None
+        super().__init__(config)
 
     def authenticate(self) -> cbpro.AuthenticatedClient:
         key = self.config['exchange'].get('key')
@@ -14,61 +30,73 @@ class CoinbasePro(BaseExchange):
         b64secret = self.config['exchange'].get('b64secret')
         self.client = cbpro.AuthenticatedClient(key, b64secret, passphrase)
         test = self.client.get_accounts()
-        self._api_response_check(test, ExchangeAuthError)
+        _api_response_check(test, ExchangeAuthError)
         return self.client
 
     def get_price(self) -> Decimal:
         ticker = self.client.get_product_ticker(product_id=self.coin)
-        self._api_response_check(ticker, ExchangeError)
-        self.price = Decimal(ticker['price'])
-        return self.price
+        _api_response_check(ticker, ExchangeError)
+        price = Decimal(ticker['price'])
+        return price
+
+    def get_precisions(self) -> ProductInfo:
+        product_info = None
+        products = self.client.get_products()
+        _api_response_check(products, ExchangeProductInfoError)
+        for product in products:
+            if product['id'] == self.coin:
+                product_info = ProductInfo(product)
+                product_info.digest()
+                break
+        assert product_info is not None, 'Product info must be set.'
+        # Set how many decimal places/precision price and size can have
+        self.size_decimal_places = str(product_info.base_increment).split('1')[0].count('0')
+        self.usd_decimal_places = str(product_info.quote_increment).split('1')[0].count('0')
+        return (self.size_decimal_places, self.usd_decimal_places)
 
     def get_product_info(self) -> ProductInfo:
-        self.product_info = None
+        product_info = None
         products = self.client.get_products()
-        self._api_response_check(products, ExchangeProductInfoError)
-        for p in products:
-            if p['id'] == self.coin:
-                self.product_info = ProductInfo(p)
-                self.product_info.digest()
+        _api_response_check(products, ExchangeProductInfoError)
+        for product in products:
+            if product['id'] == self.coin:
+                product_info = ProductInfo(product)
+                product_info.digest()
                 break
-        assert self.product_info is not None, 'Product info must be set.'
-        # Set how many decimal places/precision price and size can have
-        self.size_decimal_places = str(self.product_info.base_increment).split('1')[0].count('0')
-        self.usd_decimal_places = str(self.product_info.quote_increment).split('1')[0].count('0')
-        return self.product_info
+        assert product_info is not None, 'Product info must be set.'
+        return product_info
 
     def get_usd_wallet(self) -> Decimal:
-        self.wallet = None
         accounts = self.client.get_accounts()
-        self._api_response_check(accounts, ExchangeWalletError)
+        _api_response_check(accounts, ExchangeWalletError)
         for account in accounts:
             if account['currency'] == 'USD':
-                self.wallet = Decimal(account['available'])
+                wallet = Decimal(account['available'])
                 break
-        assert self.wallet is not None, 'USD wallet was not found.'
-        return self.wallet
+        assert wallet is not None, 'USD wallet was not found.'
+        return wallet
 
 
     def get_open_sells(self) -> t.List[t.Mapping[str, Decimal]]:
         orders = self.client.get_orders()
-        self._api_response_check(orders, ExchangeGetOrdersError)
-        self.open_sells = []
+        _api_response_check(orders, ExchangeGetOrdersError)
+        open_sells = []
         for order in orders:
             if order['side'] == 'sell' and order['product_id'] == self.coin:
                 order['price'] = Decimal(order['price'])
                 order['size'] = Decimal(order['size'])
-                self.open_sells.append(order)
-        return self.open_sells
+                open_sells.append(order)
+        return open_sells
 
     def get_fees(self) -> t.Tuple[Decimal, Decimal, Decimal]:
         """ pip cbpro version doesn't have my get_fees() patch, so manually query it """
+        # pylint: disable=protected-access
         fees = self.client._send_message('get', '/fees')
-        self._api_response_check(fees, ExchangeFeesError)
-        self.maker_fee = Decimal(fees['maker_fee_rate'])
-        self.taker_fee = Decimal(fees['taker_fee_rate'])
-        self.usd_volume = Decimal(fees['usd_volume'])
-        return (self.maker_fee, self.taker_fee, self.usd_volume)
+        _api_response_check(fees, ExchangeFeesError)
+        maker_fee = Decimal(fees['maker_fee_rate'])
+        taker_fee = Decimal(fees['taker_fee_rate'])
+        usd_volume = Decimal(fees['usd_volume'])
+        return (maker_fee, taker_fee, usd_volume)
 
     def buy_limit(self, price: Decimal, size: Decimal) -> dict:
         fixed_price = str(round(Decimal(price), self.usd_decimal_places))
@@ -79,9 +107,8 @@ class CoinbasePro(BaseExchange):
             size=fixed_size,
             price=fixed_price,
         )
-        self._api_response_check(response, ExchangeBuyLimitError)
-        self.buy_response = response
-        return self.buy_response
+        _api_response_check(response, ExchangeBuyLimitError)
+        return response
 
     def buy_market(self, funds: Decimal) -> dict:
         funds = str(round(Decimal(funds), self.usd_decimal_places))
@@ -90,9 +117,8 @@ class CoinbasePro(BaseExchange):
             side='buy',
             funds=funds,
         )
-        self._api_response_check(response, ExchangeBuyMarketError)
-        self.buy_response = response
-        return self.buy_response
+        _api_response_check(response, ExchangeBuyMarketError)
+        return response
 
     def sell_limit(self, price: Decimal, size: Decimal) -> dict:
         fixed_price = str(round(Decimal(price), self.usd_decimal_places))
@@ -103,9 +129,8 @@ class CoinbasePro(BaseExchange):
             price=fixed_price,
             size=fixed_size,
         )
-        self._api_response_check(response, ExchangeSellLimitError)
-        self.sell_response = response
-        return self.sell_response
+        _api_response_check(response, ExchangeSellLimitError)
+        return response
 
     def sell_market(self, size: Decimal) -> dict:
         fixed_size = str(round(Decimal(size), self.size_decimal_places))
@@ -114,19 +139,15 @@ class CoinbasePro(BaseExchange):
             side='sell',
             size=fixed_size,
         )
-        self._api_response_check(response, ExchangeSellMarketError)
-        self.sell_response = response
+        _api_response_check(response, ExchangeSellMarketError)
+        return response
 
     def cancel(self, order_id: str) -> bool:
         response = self.client.cancel_order(order_id)
-        self._api_response_check(response, ExchangeCancelError)
-        self.cancel_response = response
-        return self.cancel_response
+        _api_response_check(response, ExchangeCancelError)
+        return response
 
     def get_order(self, order_id: str) -> dict:
         response = self.client.get_order(order_id)
-        self._api_response_check(response, ExchangeGetOrderError)
-        self.order_response = response
-        return self.order_response
-
-
+        _api_response_check(response, ExchangeGetOrdersError)
+        return response

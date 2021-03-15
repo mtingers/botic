@@ -1,12 +1,15 @@
+"""Base class for handling standard things like cache files and logs
+"""
 import os
 import sys
-import time
+import pickle
 import typing as t
-from random import uniform
 from datetime import datetime
-from filelock import FileLock
 from abc import ABCMeta
-import importlib
+from filelock import FileLock
+
+class CacheNameError(Exception):
+    """Invalid cache name"""
 
 class BaseBot(metaclass=ABCMeta):
     """The base class for exchanges and trading bots
@@ -19,21 +22,28 @@ class BaseBot(metaclass=ABCMeta):
     Attributes:
         config (configparser.ConfigParser): ConfigParse object from config_path
     """
+    # pylint: disable=attribute-defined-outside-init
+    # pylint: disable=too-few-public-methods
+    # pylint: disable=no-self-use
+    # pylint: disable=bare-except
     def __init__(self, config) -> None:
         self.config = config
+        self.coin = None
+        self.log_file = None
+        self.cache_file = None
 
     def _log(self, path: t.AnyStr, msg: t.Any) -> None:
         """TODO: Replace me with Python logging"""
         now = datetime.now()
         print('{} {}'.format(now, str(msg).strip()))
-        with open(path, 'a') as f:
-            f.write('{} {}\n'.format(now, str(msg).strip()))
+        with open(path, 'a') as log_fd:
+            log_fd.write('{} {}\n'.format(now, str(msg).strip()))
 
     def _write_cache(self) -> None:
         """Write self.cache to disk atomically"""
-        with open(self.cache_file + '-tmp', "wb") as f:
-            pickle.dump(self.cache, f)
-            os.fsync(f)
+        with open(self.cache_file + '-tmp', "wb") as cache_fd:
+            pickle.dump(self.cache, cache_fd)
+            os.fsync(cache_fd)
         if os.path.exists(self.cache_file):
             os.rename(self.cache_file, self.cache_file + '-prev')
         os.rename(self.cache_file + '-tmp', self.cache_file)
@@ -42,10 +52,10 @@ class BaseBot(metaclass=ABCMeta):
         """Verify cache_file name and load existing cache if it exists"""
         self.cache = {}
         if not self.cache_file.endswith('.cache'):
-            raise Exception('ERROR: Cache filenames must end in .cache')
+            raise CacheNameError('ERROR: Cache filenames must end in .cache')
         if os.path.exists(self.cache_file):
-            with open(self.cache_file, "rb") as f:
-                self.cache = pickle.load(f)
+            with open(self.cache_file, "rb") as cache_fd:
+                self.cache = pickle.load(cache_fd)
 
     def _init_lock(self) -> None:
         """Initialize and open lockfile.
@@ -59,11 +69,10 @@ class BaseBot(metaclass=ABCMeta):
         except:
             print('ERROR: Failed to acquire lock: {}'.format(self.lock_file))
             print('Is another process already running with this config?')
-            exit(1)
+            sys.exit(1)
 
     def logit(self, msg: t.Any) -> None:
         """TODO: Replace me with Python logging"""
         if not self.coin in msg:
             msg = '{} {}'.format(self.coin, msg)
         self._log(self.log_file, msg)
-

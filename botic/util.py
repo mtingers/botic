@@ -1,6 +1,6 @@
-from botic.defaults import CONFIG_DEFAULTS
-import typing as t
 """Simple helper methods to be used throughout the code"""
+import typing as t
+from botic.defaults import CONFIG_DEFAULTS
 
 def parse_datetime(value: str) -> str:
     """Parse datetime string with optional milliseconds and/or timezone
@@ -25,7 +25,7 @@ def str2bool(value: str) -> bool:
     Returns:
         bool: True or False
     """
-    if type(value) == bool:
+    if isinstance(value, bool):
         return value
     return value.lower() in ("yes", "true", "t", "1")
 
@@ -40,8 +40,8 @@ def configure(obj, do_print=False) -> None:
     Args:
         do_print (bool): If True, print and log non-auth configuration items
     """
-    for section, v in CONFIG_DEFAULTS.items():
-        for key, cast, default in v:
+    for section,items in CONFIG_DEFAULTS.items():
+        for key, cast, default in items:
             val = getconf(obj.config, section, key, cast, default)
             # Special conversion to handle percent values and lists
             if key == 'mail_to':
@@ -72,4 +72,3 @@ def getconf(config, section: str, key: str, cast: t.Type, default: t.Any) -> t.A
     else:
         val = cast(val)
     return val
-

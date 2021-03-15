@@ -1,3 +1,4 @@
+"""A place to add configuration defaults"""
 
 # Available config options with defaults
 CONFIG_DEFAULTS = {

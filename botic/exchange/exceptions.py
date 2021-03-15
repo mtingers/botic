@@ -1,38 +1,37 @@
+"""Exchange specific errors"""
 
 class PriceError(Exception):
-    pass
+    """Could not convert price string to Decimal"""
 
 class ExchangeError(Exception):
-    pass
+    """Generic exchange error"""
 
 class ExchangeGetOrdersError(Exception):
-    pass
+    """Exchange get orders failed"""
 
 class ExchangeAuthError(Exception):
-    pass
+    """Exchange authentication failed"""
 
 class ExchangeBuyLimitError(Exception):
-    pass
+    """Exchange limit buy failed"""
 
 class ExchangeBuyMarketError(Exception):
-    pass
+    """Exchange market buy failed"""
 
 class ExchangeSellLimitError(Exception):
-    pass
+    """Exchange limit sell failed"""
 
 class ExchangeSellMarketError(Exception):
-    pass
+    """Exchange market sell failed"""
 
 class ExchangeProductInfoError(Exception):
-    pass
+    """Exchange product info failed"""
 
 class ExchangeCancelError(Exception):
-    pass
+    """Exchange cancel order failed"""
 
 class ExchangeFeesError(Exception):
-    pass
+    """Exchange get fees failed"""
 
 class ExchangeWalletError(Exception):
-    pass
-
-
+    """Exchange get accounts failed"""

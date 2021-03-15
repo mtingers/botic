@@ -1,10 +1,11 @@
+"""Template and base class for adding exchange modules"""
 from decimal import Decimal
 import typing as t
-from abc import ABCMeta, abstractmethod
+from abc import abstractmethod
 import configparser
 from ..basebot import BaseBot
 
-class ProductInfo:
+class ProductInfo: # pylint: disable=too-few-public-methods
     """Crypto product information class that stores some important information for making buy/sell
     calculations.
 
@@ -31,6 +32,7 @@ class ProductInfo:
         trading_disabled (bool): indicates whether trading is currently restricted on this product,
             this includes whether both new orders and order cancelations are restricted.
     """
+    # pylint: disable=too-many-instance-attributes
     def __init__(self, product_info: dict) -> None:
         self.product_info = product_info
         self.config = {
@@ -52,6 +54,24 @@ class ProductInfo:
             'trading_disabled':False,
             'margin_enabled':False,
         }
+        self.display_name = ''
+        self.base_currency = ''
+        self.quote_currency = ''
+        self.base_increment = Decimal('-1')
+        self.quote_increment = Decimal('-1')
+        self.base_min_size = Decimal('-1')
+        self.base_max_size = Decimal('-1')
+        self.min_market_funds = -1
+        self.max_market_funds = -1
+        self.status = ''
+        self.status_message = ''
+        self.cancel_only = False
+        self.limit_only = False
+        self.post_only = False
+        self.trading_disabled = False
+        self.margin_enabled = False
+        for key,val in self.config.items():
+            setattr(self, key, val)
         self.digest()
 
     def	digest(self) -> None:
@@ -92,14 +112,10 @@ class BaseExchange(BaseBot):
         Raises:
             ExchangeAuthError
         """
-        pass
 
     @abstractmethod
     def get_price(self) -> Decimal:
         """Get latest price of coin from exchange
-
-        Sets:
-            self.price
 
         Returns:
             Decimal: Decimal value of API response
@@ -111,16 +127,11 @@ class BaseExchange(BaseBot):
         Notes:
             Example API: https://docs.pro.coinbase.com/#get-product-ticker
         """
-        pass
 
     @abstractmethod
     def get_product_info(self) -> ProductInfo:
         """Build ProductInfo object from API response and set price and size precision (how many
         decimal places each can have).
-
-        Sets:
-            self.size_decimal_places
-            self.usd_decimal_places
 
         Returns:
             ProductInfo: Returns the data as a ProductInfo object
@@ -131,14 +142,10 @@ class BaseExchange(BaseBot):
         Notes:
             Example API: https://docs.pro.coinbase.com/#products
         """
-        pass
 
     @abstractmethod
     def get_usd_wallet(self) -> Decimal:
         """Get the value of USD wallet
-
-        Sets:
-            self.wallet
 
         Returns:
             Decimal: Decimal value of USD wallet
@@ -150,14 +157,10 @@ class BaseExchange(BaseBot):
             Example API: https://docs.pro.coinbase.com/#accounts
 
         """
-        pass
 
     @abstractmethod
     def get_open_sells(self) -> t.List[t.Mapping[str, Decimal]]:
         """Query exchange for an active list of open sell orders.
-
-        Sets:
-            self.open_sells
 
         Returns:
             list[dict]: Return a list of orders with values converted to Decimal where applicable
@@ -168,16 +171,10 @@ class BaseExchange(BaseBot):
         Notes:
             Example API: https://docs.pro.coinbase.com/#orders
         """
-        pass
 
     @abstractmethod
     def get_fees(self) -> t.Tuple[Decimal, Decimal]:
         """Get current maker and taker fees and optionally USD volume
-
-        Sets:
-            self.maker_fee
-            self.taker_fee
-            self.usd_volume
 
         Returns:
             tuple: (maker_fee, taker_fee, usd_volume)
@@ -188,7 +185,6 @@ class BaseExchange(BaseBot):
         Notes:
             Example API: https://docs.pro.coinbase.com/#fees
         """
-        pass
 
     @abstractmethod
     def buy_limit(self, price: Decimal, size: Decimal) -> dict:
@@ -197,9 +193,6 @@ class BaseExchange(BaseBot):
         Args:
             price (Decimal): Price per crypto
             size: (Decimal): Amount of base currency to buy
-
-        Sets:
-            self.buy_response
 
         Returns:
             dict: API response on success
@@ -210,17 +203,13 @@ class BaseExchange(BaseBot):
         Notes:
             Example API: https://docs.pro.coinbase.com/#orders
         """
-        pass
 
     @abstractmethod
-    def buy_market(self, price: Decimal) -> dict:
+    def buy_market(self, funds: Decimal) -> dict:
         """Place a buy market order
 
         Args:
             funds (Decimal): How much of your wallet to use
-
-        Sets:
-            self.buy_response
 
         Returns:
             dict: API response on success
@@ -231,7 +220,6 @@ class BaseExchange(BaseBot):
         Notes:
             Example API: https://docs.pro.coinbase.com/#orders
         """
-        pass
 
     @abstractmethod
     def sell_limit(self, price: Decimal, size: Decimal) -> dict:
@@ -241,9 +229,6 @@ class BaseExchange(BaseBot):
             price (Decimal): Price per crypto
             size: (Decimal): Amount of base currency to sell
 
-        Sets:
-            self.sell_response
-
         Returns:
             dict: API response on success
 
@@ -253,18 +238,13 @@ class BaseExchange(BaseBot):
         Notes:
             Example API: https://docs.pro.coinbase.com/#orders
         """
-        pass
 
     @abstractmethod
-    def sell_market(self, price: Decimal, size: Decimal) -> dict:
+    def sell_market(self, size: Decimal) -> dict:
         """Place a sell market order
 
         Args:
-            price (Decimal): Price per crypto
             size: (Decimal): Amount of base currency to sell
-
-        Sets:
-            self.sell_response
 
         Returns:
             dict: API response on success
@@ -275,7 +255,6 @@ class BaseExchange(BaseBot):
         Notes:
             Example API: https://docs.pro.coinbase.com/#orders
         """
-        pass
 
     @abstractmethod
     def cancel(self, order_id: str) -> bool:
@@ -283,9 +262,6 @@ class BaseExchange(BaseBot):
 
         Args:
             order_id (str): The order ID to cancel
-
-        Sets:
-            self.cancel_response
 
         Returns:
             bool: True of successful, else False
@@ -296,7 +272,6 @@ class BaseExchange(BaseBot):
         Notes:
             Example API: https://docs.pro.coinbase.com/#cancel-an-order
         """
-        pass
 
     @abstractmethod
     def get_order(self, order_id: str) -> dict:
@@ -305,15 +280,17 @@ class BaseExchange(BaseBot):
         Args:
             order_id (str): The order ID to get
 
-        Sets:
-            self.order_response
-
         Returns:
             dict: API response as a dictionary
 
         Notes:
             Example API: https://docs.pro.coinbase.com/#get-an-order
         """
-        pass
 
+    @abstractmethod
+    def get_precisions(self) -> tuple:
+        """Get usd and size precisions/decimal places
 
+        Returns:
+            tuple: (size_decimal_places, usd_decimal_places)
+        """
