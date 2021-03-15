@@ -18,10 +18,10 @@ def _api_response_check(response, exception_to_raise):
 class CoinbasePro(BaseExchange):
     """CoinbasePro exchange"""
     # pylint: disable=too-many-instance-attributes
+    # pylint: disable=no-member
     def __init__(self, config: configparser.ConfigParser) -> None:
         self.usd_decimal_places = 2
         self.size_decimal_places = 8
-        self.coin = None
         super().__init__(config)
 
     def authenticate(self) -> cbpro.AuthenticatedClient:
@@ -89,7 +89,7 @@ class CoinbasePro(BaseExchange):
         return open_sells
 
     def get_fees(self) -> t.Tuple[Decimal, Decimal, Decimal]:
-        """ pip cbpro version doesn't have my get_fees() patch, so manually query it """
+        """pypi cbpro version doesn't have my get_fees() patch, so manually query it"""
         # pylint: disable=protected-access
         fees = self.client._send_message('get', '/fees')
         _api_response_check(fees, ExchangeFeesError)

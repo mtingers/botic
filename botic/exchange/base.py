@@ -70,8 +70,6 @@ class ProductInfo: # pylint: disable=too-few-public-methods
         self.post_only = False
         self.trading_disabled = False
         self.margin_enabled = False
-        for key,val in self.config.items():
-            setattr(self, key, val)
         self.digest()
 
     def	digest(self) -> None:

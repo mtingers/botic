@@ -11,12 +11,11 @@ time.tzset()
 class Botic:
     """Botic base class to setup and start the trader"""
     # pylint: disable=too-few-public-methods
+    # pylint: disable=no-member
     def __init__(self, config_path: str, do_print=True) -> None:
         self.config = configparser.ConfigParser()
         self.config.read(config_path)
         configure(self, do_print=do_print)
-        self.trader = None
-        self.trader_module = None
         self._setup_trader()
 
     def _setup_trader(self) -> None:

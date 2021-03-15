@@ -26,11 +26,9 @@ class BaseBot(metaclass=ABCMeta):
     # pylint: disable=too-few-public-methods
     # pylint: disable=no-self-use
     # pylint: disable=bare-except
+    # pylint: disable=no-member
     def __init__(self, config) -> None:
         self.config = config
-        self.coin = None
-        self.log_file = None
-        self.cache_file = None
 
     def _log(self, path: t.AnyStr, msg: t.Any) -> None:
         """TODO: Replace me with Python logging"""

@@ -10,6 +10,7 @@ from ..botic import configure
 class BaseTrader(BaseBot):
     """Base class of abstract methods that are to be implented by traders"""
     # pylint: disable=too-many-instance-attributes
+    # pylint: disable=no-member
     def __init__(self, config) -> None:
         self.exchange_module = None
         self.pause_file = None
