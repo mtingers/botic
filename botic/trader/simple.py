@@ -50,6 +50,7 @@ class Simple(BaseTrader):
         self._get_current_price_target()
         self.can_buy = self._check_if_can_buy()
         self._maybe_buy_sell()
+        self._check_sell_orders()
         self.logit('wallet:{:2f} open-orders:{} price:{} can-buy:{}'.format(
             self.wallet, self._total_open_orders, self.current_price, self.can_buy,
         ))
@@ -230,8 +231,8 @@ class Simple(BaseTrader):
                     self.last_buy['filled_size']
                 )
                 self.logit('SELL-RESPONSE: {}'.format(response))
-                msg = 'SELL-PLACED: size:{} price:{}'.format(
-                    self.last_buy['filled_size'], self.current_price_target)
+                msg = '{} SELL-PLACED: size:{} price:{}'.format(
+                    msg, self.last_buy['filled_size'], self.current_price_target)
                 for i in msg.split('\n'):
                     self.logit(i.strip())
                 if not self.notify_only_sold:
@@ -377,16 +378,16 @@ class Simple(BaseTrader):
                         done_at = time.mktime(
                             time.strptime(parse_datetime(sell['done_at']), '%Y-%m-%dT%H:%M:%S'))
                     self.cache[buy_order_id]['profit_usd'] = buy_sell_diff
-                    msg = 'SELL-COMPLETE: duration:{:.2f} bought:{} sold:{} profit:{}'.format(
+                    msg = 'SOLD: duration:{:.2f} bought:{} sold:{} profit:{}'.format(
                         time.time() - done_at,
                         round(buy_value, 2),
                         round(sell_value, 2),
                         buy_sell_diff
                     )
                     self.logit(msg)
-                    self.send_email('SELL-COMPLETE', msg=msg)
+                    self.send_email('SOLD', msg=msg)
                 else:
-                    self.logit('SELL-COMPLETE-WITH-OTHER-STATUS: {}'.format(sell['status']))
+                    self.logit('SOLD-WITH-OTHER-STATUS: {}'.format(sell['status']))
                 self.write_cache()
             else:
                 # check for stoploss if enabled
@@ -415,10 +416,10 @@ class Simple(BaseTrader):
                             self.stoploss_strategy,
                             percent_loss, duration
                         ))
-                        self.run_stoploss(buy_order_id)
+                        self._run_stoploss(buy_order_id)
                     elif self.stoploss_strategy == 'either' and (stop_percent or stop_seconds):
                         self.logit('STOPLOSS: stoploss strategy: {} percent:{} duration:{}'.format(
                             self.stoploss_strategy,
                             percent_loss, duration
                         ))
-                        self.run_stoploss(buy_order_id)
+                        self._run_stoploss(buy_order_id)
