@@ -2,7 +2,9 @@
 """
 import os
 import sys
+import time
 import pickle
+import smtplib
 import typing as t
 from datetime import datetime
 from abc import ABCMeta
@@ -75,3 +77,20 @@ class BaseBot(metaclass=ABCMeta):
         if not self.coin in msg:
             msg = '{} {}'.format(self.coin, msg)
         self._log(self.log_file, msg)
+
+    def send_email(self, subject: str, msg: t.Optional[t.AnyStr] = None) -> None:
+        """TODO: Add auth, currently setup to relay locally or relay-by-IP"""
+        for email in self.mail_to:
+            if not email.strip():
+                continue
+            headers = "From: %s\r\nTo: %s\r\nSubject: %s %s\r\n\r\n" % (
+                self.mail_from, email, self.coin, subject)
+            if not msg:
+                msg2 = subject
+            else:
+                msg2 = msg
+            msg2 = headers + msg2
+            server = smtplib.SMTP(self.mail_host)
+            server.sendmail(self.mail_from, email, msg2)
+            server.quit()
+            time.sleep(0.1)
