@@ -51,7 +51,8 @@ class Simple(BaseTrader):
         self.can_buy = self._check_if_can_buy()
         self._maybe_buy_sell()
         self.logit('wallet:{:2f} open-orders:{} price:{} can-buy:{}'.format(
-            self.wallet, self._total_open_orders, self.current_price, self.can_buy))
+            self.wallet, self._total_open_orders, self.current_price, self.can_buy,
+        ))
 
     @property
     def _total_open_orders(self) -> int:
@@ -188,7 +189,7 @@ class Simple(BaseTrader):
             'sell_order': None, 'sell_order_completed': None,
             'completed': False, 'profit_usd': None
         }
-        self._write_cache()
+        self.write_cache()
         done = False
         status_errors = 0
         buy = {}
@@ -196,7 +197,7 @@ class Simple(BaseTrader):
             try:
                 buy = self.exchange.get_order(order_id)
                 self.cache[order_id]['last_status'] = buy
-                self._write_cache()
+                self.write_cache()
                 if 'settled' in buy:
                     if buy['settled']:
                         self.logit('FILLED: size:{} funds:{}'.format(
@@ -240,7 +241,7 @@ class Simple(BaseTrader):
                 self.logit('ExchangeSellLimitError: {}'.format(err))
                 self.cache[order_id]['completed'] = True
                 self.cache[order_id]['sell_order'] = None
-            self._write_cache()
+            self.write_cache()
             self.last_buy = None
         else:
             # buy was placed but could not get order status
@@ -276,7 +277,7 @@ class Simple(BaseTrader):
         # new order
         response = self.exchange.sell_market(sell['size'])
         self.cache[buy_order_id]['sell_order'] = response
-        self._write_cache()
+        self.write_cache()
         self.logit('STOPLOSS: SELL-RESPONSE: {}'.format(response))
         order_id = response['id']
         time.sleep(5)
@@ -287,12 +288,12 @@ class Simple(BaseTrader):
             try:
                 status = self.exchange.get_order(order_id)
                 self.cache[buy_order_id]['sell_order'] = status
-                self._write_cache()
+                self.write_cache()
                 if 'settled' in status:
                     if status['settled']:
                         self.logit('SELL-FILLED: {}'.format(status))
                         self.cache[buy_order_id]['sell_order_completed'] = status
-                        self._write_cache()
+                        self.write_cache()
                         done = True
                         break
                 else:
@@ -329,14 +330,14 @@ class Simple(BaseTrader):
                     self.logit('WARNING: Failed to get order status:')
                     self.logit('WARNING: Writing as done/error since it has been > 2 hours.')
                     self.cache[buy_order_id]['completed'] = True
-                    self._write_cache()
+                    self.write_cache()
                 continue
             if 'message' in info['sell_order']:
                 self.logit(
                     'WARNING: Corrupted sell order, mark as done: {}'.format(info['sell_order']))
                 self.cache[buy_order_id]['completed'] = True
                 self.cache[buy_order_id]['sell_order'] = None
-                self._write_cache()
+                self.write_cache()
                 self.send_email('SELL-CORRUPTED',
                     msg='WARNING: Corrupted sell order, mark as done: {}'.format(
                         info['sell_order'])
@@ -351,7 +352,7 @@ class Simple(BaseTrader):
                     self.logit('WARNING: Failed to get order status:')
                     self.logit('WARNING: Writing as done/error since it has been > 2 hours.')
                     self.cache[buy_order_id]['completed'] = True
-                    self._write_cache()
+                    self.write_cache()
                 continue
 
             if 'status' in sell and sell['status'] != 'open':
@@ -386,7 +387,7 @@ class Simple(BaseTrader):
                     self.send_email('SELL-COMPLETE', msg=msg)
                 else:
                     self.logit('SELL-COMPLETE-WITH-OTHER-STATUS: {}'.format(sell['status']))
-                self._write_cache()
+                self.write_cache()
             else:
                 # check for stoploss if enabled
                 if self.stoploss_enable:

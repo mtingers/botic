@@ -18,8 +18,8 @@ class BaseTrader(BaseBot):
     def _init(self) -> None:
         """Initialize configuration, lock, cache and load exchange"""
         self.configure()
-        self._init_lock()
-        self._init_cache()
+        self.init_lock()
+        self.init_cache()
         self._load_exchange()
 
     def _load_exchange(self) -> None:

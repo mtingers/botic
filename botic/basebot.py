@@ -30,23 +30,8 @@ class BaseBot(metaclass=ABCMeta):
     def __init__(self, config) -> None:
         self.config = config
 
-    def _log(self, path: t.AnyStr, msg: t.Any) -> None:
-        """TODO: Replace me with Python logging"""
-        now = datetime.now()
-        print('{} {}'.format(now, str(msg).strip()))
-        with open(path, 'a') as log_fd:
-            log_fd.write('{} {}\n'.format(now, str(msg).strip()))
 
-    def _write_cache(self) -> None:
-        """Write self.cache to disk atomically"""
-        with open(self.cache_file + '-tmp', "wb") as cache_fd:
-            pickle.dump(self.cache, cache_fd)
-            os.fsync(cache_fd)
-        if os.path.exists(self.cache_file):
-            os.rename(self.cache_file, self.cache_file + '-prev')
-        os.rename(self.cache_file + '-tmp', self.cache_file)
-
-    def _init_cache(self) -> None:
+    def init_cache(self) -> None:
         """Verify cache_file name and load existing cache if it exists"""
         self.cache = {}
         if not self.cache_file.endswith('.cache'):
@@ -55,7 +40,7 @@ class BaseBot(metaclass=ABCMeta):
             with open(self.cache_file, "rb") as cache_fd:
                 self.cache = pickle.load(cache_fd)
 
-    def _init_lock(self) -> None:
+    def init_lock(self) -> None:
         """Initialize and open lockfile.
 
         Note that this is done to avoid running duplicate configurations at the same time.
@@ -68,6 +53,22 @@ class BaseBot(metaclass=ABCMeta):
             print('ERROR: Failed to acquire lock: {}'.format(self.lock_file))
             print('Is another process already running with this config?')
             sys.exit(1)
+
+    def write_cache(self) -> None:
+        """Write self.cache to disk atomically"""
+        with open(self.cache_file + '-tmp', "wb") as cache_fd:
+            pickle.dump(self.cache, cache_fd)
+            os.fsync(cache_fd)
+        if os.path.exists(self.cache_file):
+            os.rename(self.cache_file, self.cache_file + '-prev')
+        os.rename(self.cache_file + '-tmp', self.cache_file)
+
+    def _log(self, path: t.AnyStr, msg: t.Any) -> None:
+        """TODO: Replace me with Python logging"""
+        now = datetime.now()
+        print('{} {}'.format(now, str(msg).strip()))
+        with open(path, 'a') as log_fd:
+            log_fd.write('{} {}\n'.format(now, str(msg).strip()))
 
     def logit(self, msg: t.Any) -> None:
         """TODO: Replace me with Python logging"""
