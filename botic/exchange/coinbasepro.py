@@ -1,4 +1,5 @@
 """CoinbasePro exchange module"""
+import time
 import configparser
 import typing as t
 import cbpro
@@ -23,6 +24,13 @@ class CoinbasePro(BaseExchange):
         self.usd_decimal_places = 2
         self.size_decimal_places = 8
         super().__init__(config)
+        self._last_call = time.time()
+
+    def _rate_limit(self):
+        cur_time = time.time()
+        if cur_time - self._last_call < 1:
+            time.sleep(0.5)
+        self._last_call = cur_time
 
     def authenticate(self) -> cbpro.AuthenticatedClient:
         key = self.config['exchange'].get('key')
@@ -34,12 +42,14 @@ class CoinbasePro(BaseExchange):
         return self.client
 
     def get_price(self) -> Decimal:
+        self._rate_limit()
         ticker = self.client.get_product_ticker(product_id=self.coin)
         _api_response_check(ticker, ExchangeError)
         price = Decimal(ticker['price'])
         return price
 
     def get_precisions(self) -> ProductInfo:
+        self._rate_limit()
         product_info = None
         products = self.client.get_products()
         _api_response_check(products, ExchangeProductInfoError)
@@ -50,11 +60,14 @@ class CoinbasePro(BaseExchange):
                 break
         assert product_info is not None, 'Product info must be set.'
         # Set how many decimal places/precision price and size can have
-        self.size_decimal_places = str(product_info.base_increment).split('1')[0].count('0')
-        self.usd_decimal_places = str(product_info.quote_increment).split('1')[0].count('0')
+        base_increment = '%.12f' % (product_info.base_increment)
+        quote_increment = '%.12f' % (product_info.quote_increment)
+        self.size_decimal_places = base_increment.split('1')[0].count('0')
+        self.usd_decimal_places = quote_increment.split('1')[0].count('0')
         return (self.size_decimal_places, self.usd_decimal_places)
 
     def get_product_info(self) -> ProductInfo:
+        self._rate_limit()
         product_info = None
         products = self.client.get_products()
         _api_response_check(products, ExchangeProductInfoError)
@@ -67,6 +80,7 @@ class CoinbasePro(BaseExchange):
         return product_info
 
     def get_usd_wallet(self) -> Decimal:
+        self._rate_limit()
         accounts = self.client.get_accounts()
         _api_response_check(accounts, ExchangeWalletError)
         for account in accounts:
@@ -78,6 +92,7 @@ class CoinbasePro(BaseExchange):
 
 
     def get_open_sells(self) -> t.List[t.Mapping[str, Decimal]]:
+        self._rate_limit()
         orders = self.client.get_orders()
         _api_response_check(orders, ExchangeGetOrdersError)
         open_sells = []
@@ -91,6 +106,7 @@ class CoinbasePro(BaseExchange):
     def get_fees(self) -> t.Tuple[Decimal, Decimal, Decimal]:
         """pypi cbpro version doesn't have my get_fees() patch, so manually query it"""
         # pylint: disable=protected-access
+        self._rate_limit()
         fees = self.client._send_message('get', '/fees')
         _api_response_check(fees, ExchangeFeesError)
         maker_fee = Decimal(fees['maker_fee_rate'])
@@ -99,6 +115,7 @@ class CoinbasePro(BaseExchange):
         return (maker_fee, taker_fee, usd_volume)
 
     def buy_limit(self, price: Decimal, size: Decimal) -> dict:
+        self._rate_limit()
         fixed_price = str(round(Decimal(price), self.usd_decimal_places))
         fixed_size = str(round(Decimal(size), self.size_decimal_places))
         response = self.client.place_limit_order(
@@ -111,7 +128,9 @@ class CoinbasePro(BaseExchange):
         return response
 
     def buy_market(self, funds: Decimal) -> dict:
+        self._rate_limit()
         funds = str(round(Decimal(funds), self.usd_decimal_places))
+        self.logit('buy_market: funds:{}'.format(funds))
         response = self.client.place_market_order(
             product_id=self.coin,
             side='buy',
@@ -121,8 +140,10 @@ class CoinbasePro(BaseExchange):
         return response
 
     def sell_limit(self, price: Decimal, size: Decimal) -> dict:
+        self._rate_limit()
         fixed_price = str(round(Decimal(price), self.usd_decimal_places))
         fixed_size = str(round(Decimal(size), self.size_decimal_places))
+        self.logit('sell_limit: price:{} size:{}'.format(fixed_price, fixed_size))
         response = self.client.place_limit_order(
             product_id=self.coin,
             side='sell',
@@ -133,7 +154,9 @@ class CoinbasePro(BaseExchange):
         return response
 
     def sell_market(self, size: Decimal) -> dict:
+        self._rate_limit()
         fixed_size = str(round(Decimal(size), self.size_decimal_places))
+        self.logit('sell_market: size:{}'.format(fixed_size))
         response = self.client.place_market_order(
             product_id=self.coin,
             side='sell',
@@ -143,11 +166,13 @@ class CoinbasePro(BaseExchange):
         return response
 
     def cancel(self, order_id: str) -> bool:
+        self._rate_limit()
         response = self.client.cancel_order(order_id)
         _api_response_check(response, ExchangeCancelError)
         return response
 
     def get_order(self, order_id: str) -> dict:
+        self._rate_limit()
         response = self.client.get_order(order_id)
         _api_response_check(response, ExchangeGetOrdersError)
         return response

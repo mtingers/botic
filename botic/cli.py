@@ -29,7 +29,11 @@ def main() -> None:
         usage()
     config_path = sys.argv[1]
     bot = Botic(config_path)
-    bot.run()
+    try:
+        bot.run()
+    except KeyboardInterrupt:
+        print('exit')
+
 
 if __name__ == '__main__':
     main()

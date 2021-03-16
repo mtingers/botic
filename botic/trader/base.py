@@ -7,17 +7,14 @@ from abc import abstractmethod
 from ..basebot import BaseBot
 from ..botic import configure
 
+class UnknownExchangeModuleError(Exception):
+    """Unknown trader module"""
+
 class BaseTrader(BaseBot):
     """Base class of abstract methods that are to be implented by traders"""
     # pylint: disable=too-many-instance-attributes
     # pylint: disable=no-member
-    def __init__(self, config) -> None:
-        self.exchange_module = None
-        self.pause_file = None
-        self.sleep_seconds = None
-        self.exchange = None
-        super().__init__(config)
-
+    # pylint: disable=attribute-defined-outside-init
     def _init(self) -> None:
         """Initialize configuration, lock, cache and load exchange"""
         self.configure()
@@ -39,7 +36,8 @@ class BaseTrader(BaseBot):
         mod = importlib.import_module(mod_path)
         obj = getattr(mod, self.exchange_module, None)
         if not obj:
-            raise Exception('Unknown exchange module: {}'.format(self.exchange_module))
+            raise UnknownExchangeModuleError('Unknown exchange module: {}'.format(
+                self.exchange_module))
         self.exchange = obj(self.config)
         self.exchange.authenticate()
         configure(self.exchange, do_print=False)

@@ -8,6 +8,9 @@ from .util import configure
 os.environ['TZ'] = 'UTC'
 time.tzset()
 
+class UnknownTraderModuleError(Exception):
+    """Unknown trader module"""
+
 class Botic:
     """Botic base class to setup and start the trader"""
     # pylint: disable=too-few-public-methods
@@ -32,7 +35,7 @@ class Botic:
         mod = importlib.import_module(mod_path) #, package='botic')
         obj = getattr(mod, self.trader_module, None)
         if not obj:
-            raise Exception('Unknown trader module: {}'.format(self.trader_module))
+            raise UnknownTraderModuleError('Unknown trader module: {}'.format(self.trader_module))
         self.trader = obj(self.config)
         # Write config vars to trader object
         configure(self.trader, do_print=False)

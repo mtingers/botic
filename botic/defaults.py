@@ -18,13 +18,14 @@ CONFIG_DEFAULTS = {
     'trader': [
         ('trader_module', str, 'Simple'),
         # Optional config for the trader module goes here.
+        # All trader modules can have their own custom names for these key/value pairs.
         # The default config reader will get/set all values in the [trader] section as strings.
         # The trader_module is responsible for converting values as needed.
         # Examples:
         #('max_outstanding_sells', int, 10),
         #('max_buys_per_hour', int, 10),
         #('sell_target', Decimal, Decimal('1.25')),
-        #('sell_barrier', Decimal, Decimal('0.5')),
+        #('buy_barrier', Decimal, Decimal('0.5')),
         #('buy_percent', Decimal, Decimal('2.0')),
         #('buy_max', Decimal, Decimal('150.00')),
         #('buy_min', Decimal, Decimal('35.00')),
