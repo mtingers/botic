@@ -21,7 +21,7 @@ setup(
             'boticp=botic.cli:main_persist',
         ],
     },
-    package_data={'botic': ['data/historical-btc.csv']},
+    package_data={'botic': ['data/historical-btc.csv.gz']},
     include_package_data=True,
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[

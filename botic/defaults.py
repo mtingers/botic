@@ -10,10 +10,11 @@ CONFIG_DEFAULTS = {
     ],
     'general': [
         ('coin', str, 'BTC-USD'),
-        ('sleep_seconds', int, 60),
+        ('sleep_seconds', float, 60),
         ('log_file', str, 'botic-btc.log'),
         ('cache_file', str, 'botic-btc.cache'),
         ('pause_file', str, 'bot.pause'),
+        ('log_disabled', bool, False),
     ],
     'trader': [
         ('trader_module', str, 'Simple'),

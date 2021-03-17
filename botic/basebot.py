@@ -65,18 +65,22 @@ class BaseBot(metaclass=ABCMeta):
             os.rename(self.cache_file, self.cache_file + '-prev')
         os.rename(self.cache_file + '-tmp', self.cache_file)
 
-    def _log(self, path: t.AnyStr, msg: t.Any) -> None:
+    def _log(self, path: t.AnyStr, msg: t.Any, custom_datetime=None) -> None:
         """TODO: Replace me with Python logging"""
-        now = datetime.now()
+        if custom_datetime:
+            now = custom_datetime
+        else:
+            now = datetime.now()
         print('{} {}'.format(now, str(msg).strip()))
-        with open(path, 'a') as log_fd:
-            log_fd.write('{} {}\n'.format(now, str(msg).strip()))
+        if not self.log_disabled:
+            with open(path, 'a') as log_fd:
+                log_fd.write('{} {}\n'.format(now, str(msg).strip()))
 
-    def logit(self, msg: t.Any) -> None:
+    def logit(self, msg: t.Any, custom_datetime=None) -> None:
         """TODO: Replace me with Python logging"""
         if not self.coin in msg:
             msg = '{} {}'.format(self.coin, msg)
-        self._log(self.log_file, msg)
+        self._log(self.log_file, msg, custom_datetime=custom_datetime)
 
     def send_email(self, subject: str, msg: t.Optional[t.AnyStr] = None) -> None:
         """TODO: Add auth, currently setup to relay locally or relay-by-IP"""

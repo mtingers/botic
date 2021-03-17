@@ -1,4 +1,5 @@
 """Template and base class for adding exchange modules"""
+import time
 from decimal import Decimal
 import typing as t
 from abc import abstractmethod
@@ -289,3 +290,12 @@ class BaseExchange(BaseBot):
         Returns:
             tuple: (size_decimal_places, usd_decimal_places)
         """
+
+    def get_time(self) -> float:
+        """Optional override: Return the time based off of what the exchange sees.
+        This can be useful for running backtesting and emulating timing in the past.
+
+        Returns:
+            float: epoch timestamp
+        """
+        return time.time()
