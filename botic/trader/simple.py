@@ -42,11 +42,11 @@ class Simple(BaseTrader):
         self.stoploss_strategy = str(self.stoploss_strategy)
 
     def run_trading_algorithm(self) -> None:
-        self.wallet = self.exchange.get_usd_wallet()
         self.product_info = self.exchange.get_product_info()
         self.current_price = self.exchange.get_price()
         self.maker_fee, self.taker_fee, self.usd_volume = self.exchange.get_fees()
         self.size_decimal_places, self.usd_decimal_places = self.exchange.get_precisions()
+        self.wallet = self.exchange.get_usd_wallet()
         self._get_current_price_target()
         self.can_buy = self._check_if_can_buy()
         self._maybe_buy_sell()
