@@ -327,6 +327,7 @@ def draw_menu(stdscr):
     last_draw = time.time()
     last_open_orders = time.time()
     last_stats = time.time()
+    open_orders = get_open_orders(regex_str)
     mode_str = 'Stats'
     open_orders_title = '{:>15} {:>9} {:>13} {:>13} {:>13} {:>11}'.format(
         'Duration', 'Coin', 'Bought', 'Sell-Price', 'Size', 'Diff%',
@@ -443,14 +444,16 @@ def draw_menu(stdscr):
             stdscr.attron(curses.color_pair(7))
             stdscr.attron(curses.A_BOLD)
             i = 0
+            #open_orders = ['1','2','3','4','5','6','7','8','9','10','11']
             for i,s in enumerate(open_orders):
-                if i+4 > height:
+                if i+5 > height:
                     break
-                addstr_wrap(stdscr, 1+i, 0, s)
-                addstr_wrap(stdscr, 1+i, len(s), " " * (width - len(s)))
-            ndisplayed = '({}/{} displayed)'.format(i, len(open_orders))
-            addstr_wrap(stdscr, 1+i, 0, ndisplayed)
-            addstr_wrap(stdscr, 1+i, len(ndisplayed), " " * (width - len(ndisplayed)))
+                addstr_wrap(stdscr, 2+i, 0, s)
+                addstr_wrap(stdscr, 2+i, len(s), " " * (width - len(s)))
+            if len(open_orders) > 1:
+                ndisplayed = '({}/{} displayed)'.format(i, len(open_orders)-1)
+                addstr_wrap(stdscr, 3+i, 0, ndisplayed)
+                addstr_wrap(stdscr, 3+i, len(ndisplayed), " " * (width - len(ndisplayed)))
             stdscr.attroff(curses.color_pair(7))
             stdscr.attroff(curses.A_BOLD)
 
