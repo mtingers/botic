@@ -6,6 +6,9 @@ import time
 from shlex import quote
 from .botic import Botic
 
+os.environ['TZ'] = 'UTC'
+time.tzset()
+
 def usage():
     """Prints the usage information"""
     print('{} <config-file>'.format(sys.argv[0]))

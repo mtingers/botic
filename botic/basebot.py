@@ -10,6 +10,9 @@ from datetime import datetime
 from abc import ABCMeta
 from filelock import FileLock
 
+os.environ['TZ'] = 'UTC'
+time.tzset()
+
 class CacheNameError(Exception):
     """Invalid cache name"""
 
