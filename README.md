@@ -1,6 +1,9 @@
 # botic
 Free, open-source, extendable crypto trading bot.
 
+Botic can integrate with multiple exchanges and use different trading algorithms. The current
+state only has a few available, but more will come in the future.
+
 # DISCLAIMER
 
 This software is for educational purposes only. Do not risk money which you are afraid to lose. USE
