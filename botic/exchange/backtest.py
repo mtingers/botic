@@ -75,7 +75,8 @@ class Backtest(BaseExchange):
         except Exception as err:
             raise NoMoreDataError('Backtest has ended. Error was:{}'.format(err))
         if float(tstamp) < self._adjusted_time:
-            raise Exception('Time went backwards')
+            raise Exception('Time went backwards: tstamp:{} was:{}'.format(
+                tstamp, self._adjusted_time))
         self._adjusted_time = float(tstamp)
         # for a check of date
         self._time2datetime()
@@ -110,7 +111,7 @@ class Backtest(BaseExchange):
             self._prepare_candle()
         self._last_price = Decimal(price)
         self._settle_trades()
-        self._adjusted_time += 3
+        #self._adjusted_time += 1
         return self._last_price
 
     def _settle_trades(self):
