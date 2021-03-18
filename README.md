@@ -34,10 +34,10 @@ python setup.py install
 
 ## Directory Setup
 
-To get started, in your project's directory it is recommended to create a few directories:
-1. `cache` - stores state files to track orders
-2. `log` - log data
-3. `config` - store configuration files
+In the project's directory, it is recommended to create a few sub-directories:
+1. `cache` - state files to track orders
+2. `log` - log files
+3. `config` - configuration files
 
 Example:
 ```
@@ -108,7 +108,7 @@ botictop
 # Backtesting
 To test out different trader modules/algorithms, there is a drop-in
 [backtest exchange](/botic/exchange/backtest.py) that provides historical CoinbasePro BTC-USD data.
-To use, set your config to `exchange_module = Backtest`.
+To use, set the config to `exchange_module = Backtest`.
 
 It's important to note that re-running a backtest may result in a order ID key error. Remove the
 configured cache file to fix (e.g. `rm cache/btc-backtest.cache).
