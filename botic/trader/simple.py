@@ -56,10 +56,14 @@ class Simple(BaseTrader):
         self.can_buy = self._check_if_can_buy()
         self._maybe_buy_sell()
         self._check_sell_orders()
-        if time.time() - self._rate_limit_log > 2:
+        hold_value = self.exchange.get_hold_value()
+        if time.time() - self._rate_limit_log > 0.5:
             self._rate_limit_log = time.time()
-            self.logit('wallet:{:2f} open-orders:{} price:{} can-buy:{}'.format(
-                self.wallet, self._total_open_orders, self.current_price, self.can_buy),
+            total_value = hold_value + self.wallet
+            self.logit(
+                'wallet:{:2f} open:{} price:{} held:{} canbuy:{} total-value:{}'.format(
+                self.wallet, self._total_open_orders, self.current_price, hold_value,
+                self.can_buy, total_value),
                 custom_datetime=self._time2datetime())
 
     @property
@@ -304,10 +308,9 @@ class Simple(BaseTrader):
         info = self.cache[buy_order_id]
         sell = info['sell_order']
         # cancel
-        response = self.exchange.cancel_order(sell['id'])
+        response = self.exchange.cancel(sell['id'])
         self.logit('STOPLOSS: CANCEL-RESPONSE: {}'.format(response),
             custom_datetime=self._time2datetime())
-        time.sleep(5)
         # new order
         response = self.exchange.sell_market(sell['size'])
         self.cache[buy_order_id]['sell_order'] = response
@@ -315,7 +318,6 @@ class Simple(BaseTrader):
         self.logit('STOPLOSS: SELL-RESPONSE: {}'.format(response),
             custom_datetime=self._time2datetime())
         order_id = response['id']
-        time.sleep(5)
         done = False
         errors = 0
         status_errors = 0
@@ -427,7 +429,7 @@ class Simple(BaseTrader):
                         round(sell_value, 2),
                         buy_sell_diff
                     )
-                    self.logit(msg)
+                    self.logit(msg, custom_datetime=self._time2datetime())
                     self.send_email('SOLD', msg=msg)
                 else:
                     self.logit('SOLD-WITH-OTHER-STATUS: {}'.format(sell['status']),
@@ -444,26 +446,26 @@ class Simple(BaseTrader):
                         Decimal(info['last_status']['filled_size']),
                         4
                     )
-                    percent_loss = 100 * (self.current_price / bought_price) - Decimal('100.0')
+                    percent_change = (bought_price-self.current_price) / bought_price
                     stop_seconds = False
                     stop_percent = False
                     if duration >= self.stoploss_seconds:
                         stop_seconds = True
-                    if percent_loss <= self.stoploss_percent:
+                    if percent_change <= self.stoploss_percent:
                         stop_percent = True
                     if (stop_seconds or stop_percent) and self.stoploss_strategy == 'report':
                         self.logit('STOPLOSS: percent:{} duration:{}'.format(
-                            percent_loss, duration), custom_datetime=self._time2datetime())
+                            percent_change, duration), custom_datetime=self._time2datetime())
 
                     if self.stoploss_strategy == 'both' and stop_percent and stop_seconds:
-                        self.logit('STOPLOSS: stoploss strategy: {} percent:{} duration:{}'.format(
+                        self.logit('STOPLOSS: strategy:{} percent:{} duration:{}'.format(
                             self.stoploss_strategy,
-                            percent_loss, duration
+                            percent_change, duration
                         ), custom_datetime=self._time2datetime())
                         self._run_stoploss(buy_order_id)
                     elif self.stoploss_strategy == 'either' and (stop_percent or stop_seconds):
-                        self.logit('STOPLOSS: stoploss strategy: {} percent:{} duration:{}'.format(
+                        self.logit('STOPLOSS: strategy:{} percent:{} duration:{}'.format(
                             self.stoploss_strategy,
-                            percent_loss, duration
+                            percent_change, duration,
                         ), custom_datetime=self._time2datetime())
                         self._run_stoploss(buy_order_id)
