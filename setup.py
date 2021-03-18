@@ -19,6 +19,7 @@ setup(
         'console_scripts': [
             'botic=botic.cli:main',
             'boticp=botic.cli:main_persist',
+            'botictop=botic.top:main',
         ],
     },
     package_data={'botic': ['data/historical-btc.csv.gz']},
