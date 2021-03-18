@@ -13,6 +13,9 @@ import uuid
 from pkgutil import get_data
 from .base import BaseExchange, ProductInfo, Decimal
 
+class NoMoreDataError(Exception):
+    """Signify end of csv data input"""
+
 class Backtest(BaseExchange):
     """Backtest"""
     # pylint: disable=too-many-instance-attributes
@@ -40,7 +43,7 @@ class Backtest(BaseExchange):
             'quote_increment':Decimal('0.01000000'),
             'base_min_size':Decimal('0.00100000'),
             'base_max_size':Decimal('280.00000000'),
-            'min_market_funds':5,
+            'min_market_funds':30,
             'max_market_funds':1000000,
             'status':'online',
             'status_message':'',
@@ -66,20 +69,34 @@ class Backtest(BaseExchange):
         Currently tries something like:
             open -> (open+low)/2 -> (open+low+high)/3 -> high -> (close+low+high)/3 -> close
         """
-        data = self._data[self._data_pos].replace('"', '').split(',')
-        tstamp, low, high, x_open, x_close, volume  = [Decimal(i) for i in data]
+        try:
+            data = self._data[self._data_pos].replace('"', '').split(',')
+            tstamp, low, high, x_open, x_close, volume  = [Decimal(i) for i in data]
+        except Exception as err:
+            raise NoMoreDataError('Backtest has ended. Error was:{}'.format(err))
+        if float(tstamp) < self._adjusted_time:
+            raise Exception('Time went backwards')
         self._adjusted_time = float(tstamp)
+        # for a check of date
+        self._time2datetime()
         #self.adjusted_time = datetime.datetime.fromtimestamp(tstamp)
         self._data_pos += 1
         self._data_buf = []
+        open_low = round((x_open+low)/2, 2)
+        open_low_high = round((x_open+low+high)/3, 2)
+        close_low_high = round((x_close+low+high)/3, 2)
         self._data_buf.append(x_open)
-        #self._data_buf.append(round(x_open+low/2, 2))
-        #self._data_buf.append(round(x_open+low+high/3, 2))
-        #self._data_buf.append(high)
-        #self._data_buf.append(round(x_close+low+high/3, 2))
-        self._data_buf.append(x_close)
+        if not open_low in self._data_buf:
+            self._data_buf.append(open_low)
+        if not open_low_high in self._data_buf:
+            self._data_buf.append(open_low_high)
+        if not high in self._data_buf:
+            self._data_buf.append(high)
+        if not close_low_high in self._data_buf:
+            self._data_buf.append(close_low_high)
+        if not x_close in self._data_buf:
+            self._data_buf.append(x_close)
         self._data_buf_idx = 0
-
 
     def authenticate(self):
         return None
@@ -93,6 +110,7 @@ class Backtest(BaseExchange):
             self._prepare_candle()
         self._last_price = Decimal(price)
         self._settle_trades()
+        self._adjusted_time += 3
         return self._last_price
 
     def _settle_trades(self):
@@ -213,8 +231,31 @@ class Backtest(BaseExchange):
         fixed_size = str(round(Decimal(size), self.size_decimal_places))
         self.logit('sell_market: size:{}'.format(fixed_size),
             custom_datetime=self._time2datetime())
-        raise Exception('No implemented: sell_market')
-        return {}
+        uid = str(uuid.uuid4())
+        usd_used = Decimal(size) * self._last_price
+        fees = round(usd_used * self._taker_fee, 12)
+        executed_value = usd_used - fees
+        self._wallet += executed_value
+        response = {
+            'created_at': self._time2datetime().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            'done_at': self._time2datetime().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            'executed_value': str(executed_value),
+            'fill_fees': str(fees),
+            'filled_size': str(size),
+            'id': uid,
+            'post_only': False,
+            'price': str(self._last_price),
+            'product_id': 'BTC-USD',
+            'settled': True,
+            'side': 'sell',
+            'size': fixed_size,
+            'status': 'done',
+            'stp': 'dc',
+            'time_in_force': 'GTC',
+            'type': 'market'
+        }
+        self._orders[uid] = response
+        return response
 
     def cancel(self, order_id: str) -> bool:
         if self._orders[order_id]['status'] == 'open':
@@ -230,3 +271,14 @@ class Backtest(BaseExchange):
 
     def get_time(self) -> float:
         return self._adjusted_time
+
+    def get_hold_value(self) -> Decimal:
+        total = Decimal('0.0')
+        price = self._last_price
+        for _, info in self._orders.items():
+            if info['side'] == 'sell' and info['status'] == 'open':
+                amount = Decimal(info['size']) * Decimal(info['price'])
+                total += amount
+        return total
+
+
