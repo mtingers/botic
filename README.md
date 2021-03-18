@@ -133,7 +133,7 @@ copy the base template class and implement the abstract methods. Example:
 
 ```
 cp -nv botic/exchange/base.py botic/exchange/EXCHANGE_NAME.py
-edit botic/exchange/EXCHANGE_NAME.py
+editor botic/exchange/EXCHANGE_NAME.py
 ```
 
 NOTE: The template base class will likely change or be clarified more in the next few releases.
@@ -145,7 +145,7 @@ copy the base template class and implement the abstract methods. Example:
 
 ```
 cp -nv botic/trader/base.py botic/trader/TRADER_NAME.py
-edit botic/trader/TRADER_NAME.py
+editor botic/trader/TRADER_NAME.py
 ```
 
 NOTE: The template base class will likely change or be clarified more in the next few releases.
