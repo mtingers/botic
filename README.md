@@ -42,7 +42,7 @@ mkdir cache log config
 ```
 
 ## Configuration
-Copy the ![example.conf](/example.conf) to the `config/` directory. The recommendation is to name it after the
+Copy the [example.conf](/example.conf) to the `config/` directory. The recommendation is to name it after the
 currency (e.g. `BTC-USD` would be `config/btc.conf`)
 
 ```
@@ -108,11 +108,11 @@ botictop
 
 
 # Contributing
-See ![CONTRIBUTING.md](/CONTRIBUTING.md)
+See [CONTRIBUTING.md](/CONTRIBUTING.md)
 
 # Adding an Exchange
 
-Exchanges modules are stored in ![botic/exchange](/botic/exchange). To add another exchange,
+Exchanges modules are stored in [botic/exchange](/botic/exchange). To add another exchange,
 copy the base template class and implement the abstract methods. Example:
 
 ```
@@ -124,7 +124,7 @@ NOTE: The template base class will likely change or be clarified more in the nex
 
 # Adding a Trader
 
-Trader modules are stored in ![botic/trader](/botic/trader). To add another trader,
+Trader modules are stored in [botic/trader](/botic/trader). To add another trader,
 copy the base template class and implement the abstract methods. Example:
 
 ```
