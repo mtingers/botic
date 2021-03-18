@@ -8,8 +8,9 @@ setup(
     author='Matth Ingersoll',
     author_email='matth@mtingers.com',
     packages=find_packages(),
-    license='BSD 2-Clause License',
-    long_description='None', #open('README.md').read(),
+    license='GPLv3',
+    long_description=open('README.md').read(),
+    long_description_content_type="text/markdown",
     url='https://github.com/mtingers/botic',
     install_requires=[
         'filelock>=3.0.12',
@@ -27,7 +28,7 @@ setup(
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: BSD License',
+        'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
