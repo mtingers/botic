@@ -10,11 +10,9 @@ import typing as t
 import gzip
 import datetime
 import uuid
+import decimal
 from pkgutil import get_data
 from .base import BaseExchange, ProductInfo, Decimal
-
-class NoMoreDataError(Exception):
-    """Signify end of csv data input"""
 
 class Backtest(BaseExchange):
     """Backtest"""
@@ -72,11 +70,14 @@ class Backtest(BaseExchange):
         try:
             data = self._data[self._data_pos].replace('"', '').split(',')
             tstamp, low, high, x_open, x_close, volume  = [Decimal(i) for i in data]
-        except Exception as err:
-            raise NoMoreDataError('Backtest has ended. Error was:{}'.format(err))
+        except decimal.InvalidOperation:
+            self.logit('Backtest has ended. No more data.')
+            exit(0)
+
         if float(tstamp) < self._adjusted_time:
             raise Exception('Time went backwards: tstamp:{} was:{}'.format(
                 tstamp, self._adjusted_time))
+
         self._adjusted_time = float(tstamp)
         # for a check of date
         self._time2datetime()
@@ -281,5 +282,3 @@ class Backtest(BaseExchange):
                 amount = Decimal(info['size']) * Decimal(info['price'])
                 total += amount
         return total
-
-
