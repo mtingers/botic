@@ -291,6 +291,14 @@ class BaseExchange(BaseBot):
             tuple: (size_decimal_places, usd_decimal_places)
         """
 
+    @abstractmethod
+    def get_hold_value(self) -> Decimal:
+        """Get value of outstanding sell orders without fees
+
+        Returns:
+            Decimal: total value of outstanding sell orders at current price
+        """
+
     def get_time(self) -> float:
         """Optional override: Return the time based off of what the exchange sees.
         This can be useful for running backtesting and emulating timing in the past.
@@ -298,4 +306,5 @@ class BaseExchange(BaseBot):
         Returns:
             float: epoch timestamp
         """
+        # pylint: disable=no-self-use
         return time.time()
