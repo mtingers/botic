@@ -81,6 +81,8 @@ mail_host = mail.example.com
 mail_from = from@example.com
 mail_to = to@example.com, other@example.com
 notify_only_sold = True
+
+[debug]
 ```
 
 ## Trading
@@ -107,6 +109,10 @@ botictop
 To test out different trader modules/algorithms, there is a drop-in
 [backtest exchange](/botic/exchange/backtest.py) that provides historical CoinbasePro BTC-USD data.
 To use, set your config to `exchange_module = Backtest`.
+
+It's important to note that re-running a backtest may result in a order ID key error. Remove the
+configured cache file to fix (e.g. `rm cache/btc-backtest.cache).
+
 
 # Contributing
 See [CONTRIBUTING.md](/CONTRIBUTING.md)
