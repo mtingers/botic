@@ -4,7 +4,7 @@ from setuptools import find_packages
 
 setup(
     name='Botic',
-    version='0.0.7',
+    version='1.0.0',
     author='Matth Ingersoll',
     author_email='matth@mtingers.com',
     packages=find_packages(),
