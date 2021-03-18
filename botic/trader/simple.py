@@ -69,7 +69,7 @@ class Simple(BaseTrader):
     @property
     def _total_open_orders(self) -> int:
         total = 0
-        for _, order in self.cache.items():
+        for _, order in self.data.items():
             if not order['completed'] and order['sell_order']:
                 total += 1
         return total
@@ -79,7 +79,7 @@ class Simple(BaseTrader):
         current_time = self.exchange.get_time()
         last_hour_time = current_time - (60 * 60)
         total = 0
-        for _, order in self.cache.items():
+        for _, order in self.data.items():
             if order['time'] >= last_hour_time:
                 total += 1
         return total
@@ -115,7 +115,7 @@ class Simple(BaseTrader):
             )
             return False
         can = True
-        for _, order in self.cache.items():  # self.open_sells:
+        for _, order in self.data.items():  # self.open_sells:
             if order['completed']:
                 continue
             sell_order = order['sell_order']
@@ -210,23 +210,23 @@ class Simple(BaseTrader):
         errors = 0
         self.last_buy = None
         # Wait until order is completely filled
-        if order_id in self.cache:
-            self.logit('ERROR: order_id exists in cache. ????: {}'.format(order_id),
+        if order_id in self.data:
+            self.logit('ERROR: order_id exists in data. ????: {}'.format(order_id),
                 custom_datetime=self._time2datetime())
-        self.cache[order_id] = {
+        self.data[order_id] = {
             'first_status': response, 'last_status': None, 'time': self.exchange.get_time(),
             'sell_order': None, 'sell_order_completed': None,
             'completed': False, 'profit_usd': None
         }
-        self.write_cache()
+        self.write_data()
         done = False
         status_errors = 0
         buy = {}
         while 1:
             try:
                 buy = self.exchange.get_order(order_id)
-                self.cache[order_id]['last_status'] = buy
-                self.write_cache()
+                self.data[order_id]['last_status'] = buy
+                self.write_data()
                 if 'settled' in buy:
                     if buy['settled']:
                         self.logit('FILLED: size:{} funds:{}'.format(
@@ -269,13 +269,13 @@ class Simple(BaseTrader):
                     self.logit(i.strip(), custom_datetime=self._time2datetime())
                 if not self.notify_only_sold:
                     self.send_email('BUY/SELL', msg=msg)
-                self.cache[order_id]['sell_order'] = response
+                self.data[order_id]['sell_order'] = response
             except ExchangeSellLimitError as err:
                 self.logit('ExchangeSellLimitError: {}'.format(err),
                     custom_datetime=self._time2datetime())
-                self.cache[order_id]['completed'] = True
-                self.cache[order_id]['sell_order'] = None
-            self.write_cache()
+                self.data[order_id]['completed'] = True
+                self.data[order_id]['sell_order'] = None
+            self.write_data()
             self.last_buy = None
         else:
             # buy was placed but could not get order status
@@ -303,9 +303,9 @@ class Simple(BaseTrader):
 
     def _run_stoploss(self, buy_order_id: t.AnyStr) -> None:
         """ Cancel sell order, place new market sell to fill immediately
-            get response and update cache
+            get response and update data
         """
-        info = self.cache[buy_order_id]
+        info = self.data[buy_order_id]
         sell = info['sell_order']
         # cancel
         response = self.exchange.cancel(sell['id'])
@@ -313,8 +313,8 @@ class Simple(BaseTrader):
             custom_datetime=self._time2datetime())
         # new order
         response = self.exchange.sell_market(sell['size'])
-        self.cache[buy_order_id]['sell_order'] = response
-        self.write_cache()
+        self.data[buy_order_id]['sell_order'] = response
+        self.write_data()
         self.logit('STOPLOSS: SELL-RESPONSE: {}'.format(response),
             custom_datetime=self._time2datetime())
         order_id = response['id']
@@ -324,14 +324,14 @@ class Simple(BaseTrader):
         while 1:
             try:
                 status = self.exchange.get_order(order_id)
-                self.cache[buy_order_id]['sell_order'] = status
-                self.write_cache()
+                self.data[buy_order_id]['sell_order'] = status
+                self.write_data()
                 if 'settled' in status:
                     if status['settled']:
                         self.logit('SELL-FILLED: {}'.format(status),
                             custom_datetime=self._time2datetime())
-                        self.cache[buy_order_id]['sell_order_completed'] = status
-                        self.write_cache()
+                        self.data[buy_order_id]['sell_order_completed'] = status
+                        self.write_data()
                         done = True
                         break
                 else:
@@ -361,8 +361,8 @@ class Simple(BaseTrader):
         """ Check if any sell orders have completed """
         # pylint: disable=too-many-locals
         # pylint: disable=bare-except
-        for buy_order_id, info in self.cache.items():
-            if self.cache[buy_order_id]['completed']:
+        for buy_order_id, info in self.data.items():
+            if self.data[buy_order_id]['completed']:
                 continue
             if not info['sell_order']:
                 self.logit('WARNING: No sell_order for buy {}. This should not happen.'.format(
@@ -372,16 +372,16 @@ class Simple(BaseTrader):
                         custom_datetime=self._time2datetime())
                     self.logit('WARNING: Writing as done/error since it has been > 2 hours.',
                         custom_datetime=self._time2datetime())
-                    self.cache[buy_order_id]['completed'] = True
-                    self.write_cache()
+                    self.data[buy_order_id]['completed'] = True
+                    self.write_data()
                 continue
             if 'message' in info['sell_order']:
                 self.logit(
                     'WARNING: Corrupted sell order, mark as done: {}'.format(info['sell_order']),
                     custom_datetime=self._time2datetime())
-                self.cache[buy_order_id]['completed'] = True
-                self.cache[buy_order_id]['sell_order'] = None
-                self.write_cache()
+                self.data[buy_order_id]['completed'] = True
+                self.data[buy_order_id]['sell_order'] = None
+                self.write_data()
                 self.send_email('SELL-CORRUPTED',
                     msg='WARNING: Corrupted sell order, mark as done: {}'.format(
                         info['sell_order'])
@@ -397,18 +397,18 @@ class Simple(BaseTrader):
                         custom_datetime=self._time2datetime())
                     self.logit('WARNING: Writing as done/error since it has been > 2 hours.',
                         custom_datetime=self._time2datetime())
-                    self.cache[buy_order_id]['completed'] = True
-                    self.write_cache()
+                    self.data[buy_order_id]['completed'] = True
+                    self.write_data()
                 continue
 
             if 'status' in sell and sell['status'] != 'open':
                 # calculate profit from buy to sell
                 # done, remove buy/sell
-                self.cache[buy_order_id]['completed'] = True
-                self.cache[buy_order_id]['sell_order_completed'] = sell
+                self.data[buy_order_id]['completed'] = True
+                self.data[buy_order_id]['sell_order_completed'] = sell
                 if sell['status'] == 'done':
                     try:
-                        first_time = self.cache[buy_order_id]['first_status']['created_at']
+                        first_time = self.data[buy_order_id]['first_status']['created_at']
                     except:
                         first_time = None
                     sell_value = Decimal(sell['executed_value'])
@@ -422,7 +422,7 @@ class Simple(BaseTrader):
                     else:
                         done_at = time.mktime(
                             time.strptime(parse_datetime(sell['done_at']), '%Y-%m-%dT%H:%M:%S'))
-                    self.cache[buy_order_id]['profit_usd'] = buy_sell_diff
+                    self.data[buy_order_id]['profit_usd'] = buy_sell_diff
                     msg = 'SOLD: duration:{:.2f} bought:{} sold:{} profit:{}'.format(
                         self.exchange.get_time() - done_at,
                         round(buy_value, 2),
@@ -434,7 +434,7 @@ class Simple(BaseTrader):
                 else:
                     self.logit('SOLD-WITH-OTHER-STATUS: {}'.format(sell['status']),
                         custom_datetime=self._time2datetime())
-                self.write_cache()
+                self.write_data()
             else:
                 # check for stoploss if enabled
                 if self.stoploss_enable:

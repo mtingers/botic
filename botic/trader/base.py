@@ -16,10 +16,10 @@ class BaseTrader(BaseBot):
     # pylint: disable=no-member
     # pylint: disable=attribute-defined-outside-init
     def _init(self) -> None:
-        """Initialize configuration, lock, cache and load exchange"""
+        """Initialize configuration, lock, data and load exchange"""
         self.configure()
         self.init_lock()
-        self.init_cache()
+        self.init_data()
         self._load_exchange()
 
     def _load_exchange(self) -> None:

@@ -35,13 +35,13 @@ python setup.py install
 ## Directory Setup
 
 In the project's directory, it is recommended to create a few sub-directories:
-1. `cache` - state files to track orders
+1. `data` - state files to track orders
 2. `log` - log files
 3. `config` - configuration files
 
 Example:
 ```
-mkdir cache log config
+mkdir data log config
 ```
 
 ## Configuration
@@ -59,7 +59,7 @@ b64secret = 123
 coin = BTC-USD
 sleep_seconds = 60
 log_file = log/btc.log
-cache_file = cache/btc.cache
+data_file = data/btc.data
 pause_file = bot.pause
 log_disabled = False
 
@@ -114,8 +114,14 @@ To test out different trader modules/algorithms, there is a drop-in
 To use, set the config to `exchange_module = Backtest`.
 
 It's important to note that re-running a backtest may result in a order ID key error. Remove the
-configured cache file to fix (e.g. `rm cache/btc-backtest.cache).
+configured data file to fix (e.g. `rm data/btc-backtest.data).
 
+
+# Dump Command
+For debug purposes, the dump command can be used to display the data/data files:
+```
+boticdump data/example.data
+```
 
 # Contributing
 See [CONTRIBUTING.md](/CONTRIBUTING.md)

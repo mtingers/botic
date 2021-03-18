@@ -1,4 +1,4 @@
-"""Base class for handling standard things like cache files and logs
+"""Base class for handling standard things like data files and logs
 """
 import os
 import sys
@@ -13,8 +13,8 @@ from filelock import FileLock
 os.environ['TZ'] = 'UTC'
 time.tzset()
 
-class CacheNameError(Exception):
-    """Invalid cache name"""
+class DataNameError(Exception):
+    """Invalid data name"""
 
 class BaseBot(metaclass=ABCMeta):
     """The base class for exchanges and trading bots
@@ -36,21 +36,21 @@ class BaseBot(metaclass=ABCMeta):
         self.config = config
 
 
-    def init_cache(self) -> None:
-        """Verify cache_file name and load existing cache if it exists"""
-        self.cache = {}
-        if not self.cache_file.endswith('.cache'):
-            raise CacheNameError('ERROR: Cache filenames must end in .cache')
-        if os.path.exists(self.cache_file):
-            with open(self.cache_file, "rb") as cache_fd:
-                self.cache = pickle.load(cache_fd)
+    def init_data(self) -> None:
+        """Verify data_file name and load existing data if it exists"""
+        self.data = {}
+        if not self.data_file.endswith('.data'):
+            raise DataNameError('ERROR: Data filenames must end in .data')
+        if os.path.exists(self.data_file):
+            with open(self.data_file, "rb") as data_fd:
+                self.data = pickle.load(data_fd)
 
     def init_lock(self) -> None:
         """Initialize and open lockfile.
 
         Note that this is done to avoid running duplicate configurations at the same time.
         """
-        self.lock_file = self.cache_file.replace('.cache', '.lock')
+        self.lock_file = self.data_file.replace('.data', '.lock')
         self.lock = FileLock(self.lock_file, timeout=1)
         try:
             self.lock.acquire()
@@ -59,14 +59,14 @@ class BaseBot(metaclass=ABCMeta):
             print('Is another process already running with this config?')
             sys.exit(1)
 
-    def write_cache(self) -> None:
-        """Write self.cache to disk atomically"""
-        with open(self.cache_file + '-tmp', "wb") as cache_fd:
-            pickle.dump(self.cache, cache_fd)
-            os.fsync(cache_fd)
-        if os.path.exists(self.cache_file):
-            os.rename(self.cache_file, self.cache_file + '-prev')
-        os.rename(self.cache_file + '-tmp', self.cache_file)
+    def write_data(self) -> None:
+        """Write self.data to disk atomically"""
+        with open(self.data_file + '-tmp', "wb") as data_fd:
+            pickle.dump(self.data, data_fd)
+            os.fsync(data_fd)
+        if os.path.exists(self.data_file):
+            os.rename(self.data_file, self.data_file + '-prev')
+        os.rename(self.data_file + '-tmp', self.data_file)
 
     def _log(self, path: t.AnyStr, msg: t.Any, custom_datetime=None) -> None:
         """TODO: Replace me with Python logging"""

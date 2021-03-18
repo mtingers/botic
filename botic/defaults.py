@@ -12,7 +12,7 @@ CONFIG_DEFAULTS = {
         ('coin', str, 'BTC-USD'),
         ('sleep_seconds', float, 60),
         ('log_file', str, 'botic-btc.log'),
-        ('cache_file', str, 'botic-btc.cache'),
+        ('data_file', str, 'botic-btc.data'),
         ('pause_file', str, 'bot.pause'),
         ('log_disabled', bool, False),
     ],

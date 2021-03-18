@@ -21,6 +21,7 @@ setup(
             'botic=botic.cli:main',
             'boticp=botic.cli:main_persist',
             'botictop=botic.top:main',
+            'boticdump=botic.dumpdata:main',
         ],
     },
     package_data={'botic': ['data/historical-btc.csv.gz']},

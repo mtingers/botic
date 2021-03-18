@@ -74,7 +74,7 @@ def avg(l):
 
 
 def get_open_orders(regex_str):
-    files = glob.glob(sys.argv[1]+'/*.cache')
+    files = glob.glob(sys.argv[1]+'/*.data')
     stats = {}
     stats_incomplete = {}
     recent = []
@@ -126,7 +126,7 @@ def get_open_orders(regex_str):
     return output
 
 def get_stats(regex_str):
-    files = glob.glob(sys.argv[1]+'/*.cache')
+    files = glob.glob(sys.argv[1]+'/*.data')
     stats = {}
     stats_incomplete = {}
     recent = []
