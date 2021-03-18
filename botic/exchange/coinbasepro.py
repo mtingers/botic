@@ -170,3 +170,6 @@ class CoinbasePro(BaseExchange):
         response = self._wrap_client('get_order', order_id)
         _api_response_check(response, ExchangeGetOrdersError)
         return response
+
+    def get_hold_value(self) -> Decimal:
+        return Decimal(-1)
