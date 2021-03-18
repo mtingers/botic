@@ -106,6 +106,10 @@ botictop
 ![botictop](/docs/top1.png)
 ![simpletop orders](/docs/top2.png)
 
+# Backtesting
+To test out different trader modules/algorithms, there is a drop-in
+[backtest exchange](/botic/exchange/backtest.py) that provides historical CoinbasePro BTC-USD data.
+To use, set your config to `exchange_module = Backtest`.
 
 # Contributing
 See [CONTRIBUTING.md](/CONTRIBUTING.md)
