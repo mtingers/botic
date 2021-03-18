@@ -94,12 +94,6 @@ Example:
 boticp config/btc.conf
 ```
 
-# Containerize
-TODO
-
-# Running from systemd
-TODO
-
 # Top Command
 
 ```
@@ -141,3 +135,9 @@ edit botic/trader/TRADER_NAME.py
 
 NOTE: The template base class will likely change or be clarified more in the next few releases.
 
+
+# Containerize
+TODO
+
+# Running from systemd
+TODO
