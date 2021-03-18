@@ -61,6 +61,7 @@ sleep_seconds = 60
 log_file = log/btc.log
 cache_file = cache/btc.cache
 pause_file = bot.pause
+log_disabled = False
 
 [trader]
 trader_module = Simple
@@ -83,6 +84,8 @@ mail_to = to@example.com, other@example.com
 notify_only_sold = True
 
 [debug]
+debug_response = False
+debug_log = log/btc-debug.log
 ```
 
 ## Trading
@@ -147,3 +150,8 @@ TODO
 
 # Running from systemd
 TODO
+
+# Reloading
+TODO: Add HUP signal config reload.
+
+Currently reloading is done by killing the process and manually starting it again.
