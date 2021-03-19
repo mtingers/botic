@@ -45,8 +45,8 @@ class ProductInfo: # pylint: disable=too-few-public-methods
             'quote_increment':Decimal('-1'),
             'base_min_size':Decimal('-1'),
             'base_max_size':Decimal('-1'),
-            'min_market_funds':-1,
-            'max_market_funds':-1,
+            'min_market_funds':Decimal(-1),
+            'max_market_funds':Decimal(-1),
             'status':'',
             'status_message':'',
             'cancel_only':False,
@@ -62,8 +62,8 @@ class ProductInfo: # pylint: disable=too-few-public-methods
         self.quote_increment = Decimal('-1')
         self.base_min_size = Decimal('-1')
         self.base_max_size = Decimal('-1')
-        self.min_market_funds = -1
-        self.max_market_funds = -1
+        self.min_market_funds = Decimal(-1)
+        self.max_market_funds = Decimal(-1)
         self.status = ''
         self.status_message = ''
         self.cancel_only = False
