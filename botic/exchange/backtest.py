@@ -4,6 +4,7 @@
 - TODO: Add more
 
 """
+import sys
 import time
 import configparser
 import typing as t
@@ -72,7 +73,7 @@ class Backtest(BaseExchange):
             tstamp, low, high, x_open, x_close, volume  = [Decimal(i) for i in data]
         except decimal.InvalidOperation:
             self.logit('Backtest has ended. No more data.')
-            exit(0)
+            sys.exit(0)
 
         if float(tstamp) < self._adjusted_time:
             raise Exception('Time went backwards: tstamp:{} was:{}'.format(
@@ -279,6 +280,6 @@ class Backtest(BaseExchange):
         price = self._last_price
         for _, info in self._orders.items():
             if info['side'] == 'sell' and info['status'] == 'open':
-                amount = Decimal(info['size']) * Decimal(info['price'])
+                amount = Decimal(info['size']) * Decimal(self._last_price)
                 total += amount
         return total
