@@ -28,9 +28,13 @@ class CoinbasePro(BaseExchange):
 
     def _rate_limit(self):
         cur_time = time.time()
-        if cur_time - self._last_call < 1:
-            time.sleep(0.5)
-        self._last_call = cur_time
+        if cur_time - self._last_call < 2:
+            sleep_time = cur_time - self._last_call
+            if sleep_time > 0:
+                time.sleep(sleep_time)
+            else:
+                time.sleep(2.1)
+        self._last_call = time.time()
 
     def _wrap_client(self, method: str, *args, **kwargs):
         self._rate_limit()
