@@ -25,6 +25,7 @@ class Backtest(BaseExchange):
         self.size_decimal_places = 8
         self._last_call = time.time()
         self._wallet = Decimal('10000.00')
+        self._coins = Decimal('0.0')
         self._orders = {}
         self._last_price = None
         self._maker_fee = Decimal('0.0010')
@@ -136,6 +137,8 @@ class Backtest(BaseExchange):
                     val['executed_value'] = str(executed_value)
                     val['fill_fees'] = str(fees)
                     val['settled'] = True
+                    self._coins -= Decimal(size)
+                    assert self._coins > Decimal(0.0)
                     print('exchange-settled: {} last_price:{} -> order:{} / {}'.format(
                         val['id'], self._last_price, price, size))
 
@@ -182,6 +185,7 @@ class Backtest(BaseExchange):
         executed_value = round(funds - (fees), 12)
         filled_size = round(executed_value/self._last_price, 8)
         uid = str(uuid.uuid4())
+        self._coins += Decimal(filled_size)
         response = {
             'created_at': self._time2datetime().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
             'done_at': self._time2datetime().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
@@ -231,14 +235,16 @@ class Backtest(BaseExchange):
         return response
 
     def sell_market(self, size: Decimal) -> dict:
+        assert self._coins > Decimal(0.0)
         fixed_size = str(round(Decimal(size), self.size_decimal_places))
-        self.logit('sell_market: size:{}'.format(fixed_size),
+        self.logit('****************** sell_market: size:{}'.format(fixed_size),
             custom_datetime=self._time2datetime())
         uid = str(uuid.uuid4())
         usd_used = Decimal(size) * self._last_price
         fees = round(usd_used * self._taker_fee, 12)
         executed_value = usd_used - fees
         self._wallet += executed_value
+        self._coins -= Decimal(size)
         response = {
             'created_at': self._time2datetime().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
             'done_at': self._time2datetime().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
@@ -276,6 +282,7 @@ class Backtest(BaseExchange):
         return self._adjusted_time
 
     def get_hold_value(self) -> Decimal:
+        return Decimal(self._coins * self._last_price)
         total = Decimal('0.0')
         price = self._last_price
         for _, info in self._orders.items():
