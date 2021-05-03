@@ -37,6 +37,24 @@ def main() -> None:
     except KeyboardInterrupt:
         print('exit')
 
+def main_profile() -> None:
+    """Run botic with cProfile"""
+    import cProfile, pstats, io
+    if len(sys.argv) != 2:
+        usage()
+    config_path = sys.argv[1]
+    pr = cProfile.Profile()
+    pr.enable()
+    bot = Botic(config_path)
+    try:
+        bot.run()
+    except KeyboardInterrupt:
+        print('exit')
+    s = io.StringIO()
+    sortby = 'cumulative'
+    ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+    ps.print_stats()
+    print(s.getvalue())
 
 if __name__ == '__main__':
     main()
