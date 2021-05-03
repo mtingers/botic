@@ -1,5 +1,6 @@
 """CoinbasePro exchange module"""
 import time
+from random import uniform
 import configparser
 import typing as t
 import cbpro
@@ -28,12 +29,13 @@ class CoinbasePro(BaseExchange):
 
     def _rate_limit(self):
         cur_time = time.time()
-        if cur_time - self._last_call < 2:
+        if cur_time - self._last_call < 3:
             sleep_time = cur_time - self._last_call
             if sleep_time > 0:
                 time.sleep(sleep_time)
             else:
                 time.sleep(2.1)
+        time.sleep(uniform(0.5, 1.5))
         self._last_call = time.time()
 
     def _wrap_client(self, method: str, *args, **kwargs):
