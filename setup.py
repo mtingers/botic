@@ -4,7 +4,7 @@ from setuptools import find_packages
 
 setup(
     name='Botic',
-    version='1.1.2',
+    version='1.1.3',
     author='Matth Ingersoll',
     author_email='matth@mtingers.com',
     packages=find_packages(),
@@ -20,6 +20,7 @@ setup(
         'console_scripts': [
             'botic=botic.cli:main',
             'boticp=botic.cli:main_persist',
+            'boticperf=botic.cli:main_profile',
             'botictop=botic.top:main',
             'boticdump=botic.dumpdata:main',
         ],
