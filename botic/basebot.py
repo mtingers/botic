@@ -81,8 +81,12 @@ class BaseBot(metaclass=ABCMeta):
 
     def logit(self, msg: t.Any, custom_datetime=None) -> None:
         """TODO: Replace me with Python logging"""
-        if not self.coin in msg:
-            msg = '{} {}'.format(self.coin, msg)
+        try:
+            if not self.coin in msg:
+                msg = '{} {}'.format(self.coin, msg)
+        except:
+            # Some cases have not fully configured variables?
+            pass
         self._log(self.log_file, msg, custom_datetime=custom_datetime)
 
     def send_email(self, subject: str, msg: t.Optional[t.AnyStr] = None) -> None:
