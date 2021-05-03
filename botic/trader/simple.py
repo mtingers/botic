@@ -446,7 +446,9 @@ class Simple(BaseTrader):
                         Decimal(info['last_status']['filled_size']),
                         4
                     )
-                    percent_change = (bought_price-self.current_price) / bought_price
+                    # This was backwards! oops:
+                    #percent_change = (bought_price-self.current_price) / bought_price
+                    percent_change = (self.current_price-bought_price) / bought_price
                     stop_seconds = False
                     stop_percent = False
                     if duration >= self.stoploss_seconds:
