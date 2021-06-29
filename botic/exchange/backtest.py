@@ -49,6 +49,7 @@ class Backtest(BaseExchange):
             'limit_only':False,
             'post_only':False,
             'trading_disabled':False,
+            'fx_stablecoin':False,
             'margin_enabled':False,
         }
         #if self.coin != 'BTC-USD':
