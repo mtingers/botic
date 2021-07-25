@@ -229,7 +229,7 @@ class Simple(BaseTrader):
                 self.write_data()
                 if 'settled' in buy:
                     if buy['settled']:
-                        self.logit('FILLED: size:{} funds:{}'.format(
+                        self.logit('BUY-FILLED: size:{} funds:{}'.format(
                             buy['filled_size'], buy['funds']),
                             custom_datetime=self._time2datetime())
                         self.last_buy = buy
@@ -254,8 +254,9 @@ class Simple(BaseTrader):
 
         # Buy order done, now place sell
         if done:
-            msg = 'BUY-FILLED: size:{} funds:{}\n'.format(buy['filled_size'], buy['funds'])
-            self.logit(msg, custom_datetime=self._time2datetime())
+            msg = ''
+            #'BUY-FILLED: size:{} funds:{}\n'.format(buy['filled_size'], buy['funds'])
+            #self.logit(msg, custom_datetime=self._time2datetime())
             try:
                 response = self.exchange.sell_limit(
                     self.current_price_target,
@@ -388,10 +389,20 @@ class Simple(BaseTrader):
                 )
                 time.sleep(3600)
                 continue
-            sell = self.exchange.get_order(info['sell_order']['id'])
-            if 'message' in sell:
-                self.logit('WARNING: Failed to get sell order status (retrying later): {}'.format(
-                    sell['message']), custom_datetime=self._time2datetime())
+            order_get_fail = False
+            try:
+                sell = self.exchange.get_order(info['sell_order']['id'])
+            except:
+                self.logit('WARNING: Failed to get order by id: {} TODO: FIXME'.format(info['sell_order']['id']))
+                order_get_fail = True
+                sell = None
+            if order_get_fail or (sell and 'message' in sell):
+                if sell and 'message' in sell:
+                    self.logit('WARNING: Failed to get sell order status (retrying later): {}'.format(
+                        sell['message']), custom_datetime=self._time2datetime())
+                else:
+                    self.logit('WARNING: Failed to get sell order status (retrying later): Unknown'.format(
+                        custom_datetime=self._time2datetime()))
                 if self.exchange.get_time() - info['time'] > 60 * 60 * 2:
                     self.logit('WARNING: Failed to get order status:',
                         custom_datetime=self._time2datetime())
@@ -401,7 +412,7 @@ class Simple(BaseTrader):
                     self.write_data()
                 continue
 
-            if 'status' in sell and sell['status'] != 'open':
+            if sell and 'status' in sell and sell['status'] != 'open':
                 # calculate profit from buy to sell
                 # done, remove buy/sell
                 self.data[buy_order_id]['completed'] = True
@@ -437,7 +448,7 @@ class Simple(BaseTrader):
                 self.write_data()
             else:
                 # check for stoploss if enabled
-                if self.stoploss_enable:
+                if self.stoploss_enable and sell:
                     created_at = time.mktime(
                         time.strptime(parse_datetime(sell['created_at']), '%Y-%m-%dT%H:%M:%S'))
                     duration = self.exchange.get_time() - created_at
