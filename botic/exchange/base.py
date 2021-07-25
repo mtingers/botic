@@ -78,8 +78,12 @@ class ProductInfo: # pylint: disable=too-few-public-methods
         To do so, map the exchange product info to the self.config values as closely as possible.
         """
         for key,val in self.product_info.items():
-            cast = type(self.config[key])
-            setattr(self, key, cast(val))
+            try:
+                cast = type(self.config[key])
+                setattr(self, key, cast(val))
+            except Exception as err:
+                # Fallback for missing self.config keys
+                setattr(self, key, val)
 
 class BaseExchange(BaseBot):
     """Base class of abstractmethods to implement for each exchange. It is important to note that
