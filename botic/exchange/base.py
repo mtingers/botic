@@ -53,6 +53,7 @@ class ProductInfo: # pylint: disable=too-few-public-methods
             'limit_only':False,
             'post_only':False,
             'trading_disabled':False,
+            'fx_stablecoin':False,
             'margin_enabled':False,
         }
         self.display_name = ''
@@ -70,6 +71,7 @@ class ProductInfo: # pylint: disable=too-few-public-methods
         self.limit_only = False
         self.post_only = False
         self.trading_disabled = False
+        self.fx_stablecoin = False
         self.margin_enabled = False
         self.digest()
 
