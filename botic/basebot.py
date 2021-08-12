@@ -22,10 +22,10 @@ class BaseBot(metaclass=ABCMeta):
     See CONFIG_DEFAULTS for more information on attributes that are set during _configure().
 
     Args:
-        config_path (str): The path to the configuration file
+        config_path (str): The path to the yaml configuration file
 
     Attributes:
-        config (configparser.ConfigParser): ConfigParse object from config_path
+        config (dict): Dict created from yaml config
     """
     # pylint: disable=attribute-defined-outside-init
     # pylint: disable=too-few-public-methods
@@ -82,8 +82,8 @@ class BaseBot(metaclass=ABCMeta):
     def logit(self, msg: t.Any, custom_datetime=None) -> None:
         """TODO: Replace me with Python logging"""
         try:
-            if not self.coin in msg:
-                msg = '{} {}'.format(self.coin, msg)
+            if not self.pair in msg:
+                msg = '{} {}'.format(self.pair, msg)
         except:
             # Some cases have not fully configured variables?
             pass
@@ -95,7 +95,7 @@ class BaseBot(metaclass=ABCMeta):
             if not email.strip():
                 continue
             headers = "From: %s\r\nTo: %s\r\nSubject: %s %s\r\n\r\n" % (
-                self.mail_from, email, self.coin, subject)
+                self.mail_from, email, self.pair, subject)
             if not msg:
                 msg2 = subject
             else:
@@ -104,4 +104,3 @@ class BaseBot(metaclass=ABCMeta):
             server = smtplib.SMTP(self.mail_host)
             server.sendmail(self.mail_from, email, msg2)
             server.quit()
-            time.sleep(0.1)

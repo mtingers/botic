@@ -9,14 +9,14 @@ CONFIG_DEFAULTS = {
         ('b64secret', str, ''),
     ],
     'general': [
-        ('coin', str, 'BTC-USD'),
         ('sleep_seconds', float, 60),
-        ('log_file', str, 'botic-btc.log'),
-        ('data_file', str, 'botic-btc.data'),
+        ('log_dir', str, 'log'),
+        ('data_dir', str, 'data'),
         ('pause_file', str, 'bot.pause'),
         ('log_disabled', bool, False),
     ],
     'trader': [
+        ('pair', str, 'BTC-USD'),
         ('trader_module', str, 'Simple'),
         # Optional config for the trader module goes here.
         # All trader modules can have their own custom names for these key/value pairs.
@@ -43,6 +43,6 @@ CONFIG_DEFAULTS = {
     ],
     'debug': [
         ('debug_response', bool, False),
-        ('debug_log', str, 'botic-debug.log'),
+        ('debug_dir', str, 'log'),
     ],
 }

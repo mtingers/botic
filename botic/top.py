@@ -27,26 +27,26 @@ def pdiff(old, new):
 def parse_datetime(d):
     return str(d).split('.')[0].split('Z')[0]
 
-def get_current_price(coin):
+def get_current_price(pair):
     last_update = time.time()
     current_price = Decimal('0.0')
-    if not coin in PRICE_CACHE:
+    if not pair in PRICE_CACHE:
         public_client = cbpro.PublicClient()
-        ticker = public_client.get_product_ticker(product_id=coin)
+        ticker = public_client.get_product_ticker(product_id=pair)
         try:
             current_price = Decimal(ticker['price'])
         except Exception as err:
             return None
     else:
         # check cache age
-        if time.time() - PRICE_CACHE[coin]['last_update'] > PRICE_CACHE_RATE:
+        if time.time() - PRICE_CACHE[pair]['last_update'] > PRICE_CACHE_RATE:
             public_client = cbpro.PublicClient()
-            ticker = public_client.get_product_ticker(product_id=coin)
+            ticker = public_client.get_product_ticker(product_id=pair)
             current_price = Decimal(ticker['price'])
         else:
-            last_update = PRICE_CACHE[coin]['last_update']
-            current_price  = PRICE_CACHE[coin]['price']
-    PRICE_CACHE[coin] = {'price':current_price, 'last_update':last_update}
+            last_update = PRICE_CACHE[pair]['last_update']
+            current_price  = PRICE_CACHE[pair]['price']
+    PRICE_CACHE[pair] = {'price':current_price, 'last_update':last_update}
     return Decimal(current_price)
 
 def sec2time(sec):
@@ -88,7 +88,7 @@ def get_open_orders(regex_str):
     output.append(open_orders_title)
     for f in files:
         data = None
-        coin = None
+        pair = None
         with open(f, "rb") as fd:
             data = pickle.load(fd)
         if not data:
@@ -100,8 +100,8 @@ def get_open_orders(regex_str):
         for order_id, v in sorted_data.items():
             if not v['first_status']:
                 continue
-            coin = v['first_status']['product_id']
-            if regex_str and not re.search(regex_str, coin, re.IGNORECASE):
+            pair = v['first_status']['product_id']
+            if regex_str and not re.search(regex_str, pair, re.IGNORECASE):
                 continue
             if v['completed'] or not v['sell_order']:
                 continue
@@ -140,7 +140,7 @@ def get_stats(regex_str):
     output_recent = []
     for f in files:
         data = None
-        coin = None
+        pair = None
         with open(f, "rb") as fd:
             data = pickle.load(fd)
         if not data:
@@ -149,12 +149,12 @@ def get_stats(regex_str):
         for order_id, v in data.items():
             if not v['first_status']:
                 continue
-            coin = v['first_status']['product_id']
+            pair = v['first_status']['product_id']
             if regex_str:
-                if not re.search(regex_str, coin, re.IGNORECASE):
+                if not re.search(regex_str, pair, re.IGNORECASE):
                     continue
-            if not coin in stats:
-                stats[coin] = {
+            if not pair in stats:
+                stats[pair] = {
                     'epoch_diffs':[], 'profits':[], 'profits_total':Decimal('0.0'),
                     'open_orders':0, 'done_orders':0, 'avg_close_time':0.0, 'error_orders':0,
                 }
@@ -171,16 +171,16 @@ def get_stats(regex_str):
                 epoch_diff = end_epoch - epoch
                 cur_diff = cur_time - end_epoch
                 if cur_diff < (86400/12):
-                    recent.append((coin, v))
+                    recent.append((pair, v))
                 profit = v['profit_usd']
-                stats[coin]['epoch_diffs'].append(epoch_diff)
-                stats[coin]['profits'].append(profit)
-                stats[coin]['profits_total'] += profit
-                stats[coin]['done_orders'] += 1
+                stats[pair]['epoch_diffs'].append(epoch_diff)
+                stats[pair]['profits'].append(profit)
+                stats[pair]['profits_total'] += profit
+                stats[pair]['done_orders'] += 1
             elif v['completed']:
-                stats[coin]['error_orders'] += 1
+                stats[pair]['error_orders'] += 1
             else:
-                cur_price = get_current_price(coin)
+                cur_price = get_current_price(pair)
                 try:
                     cur_perc = (100*(cur_price/Decimal(v['sell_order']['price']))) - Decimal('100.0')
                     open_percents.append(cur_perc)
@@ -191,7 +191,7 @@ def get_stats(regex_str):
                     pass
                 start_epoch = time.mktime(time.strptime(parse_datetime(v['first_status']['created_at']), '%Y-%m-%dT%H:%M:%S'))
                 open_times.append(cur_time - start_epoch)
-                stats[coin]['open_orders'] += 1
+                stats[pair]['open_orders'] += 1
 
     sorted_keys = OrderedDict(sorted(stats.items(), key = lambda x: getitem(x[1], 'profits_total'), reverse=True))
     output.append('{:>8} {:>13} {:>7} {:>7} {:>7} {:>12} {:>19}'.format(
@@ -210,21 +210,21 @@ def get_stats(regex_str):
     agg_epoch = []
     agg_profits = []
     for key,v  in sorted_keys.items():
-        coin = key
-        if regex_str and not re.search(regex_str, coin, re.IGNORECASE):
+        pair = key
+        if regex_str and not re.search(regex_str, pair, re.IGNORECASE):
             continue
         output.append('{:>8} {:>13} {:>7} {:>7} {:>7} {:>12} {:>19}'.format(
-            coin,
+            pair,
             '$'+str(round(sum(v['profits']), 2)),
             v['open_orders'],
             v['done_orders'],
             v['error_orders'],
-            '$'+str(round(avg(stats[coin]['profits']), 2)),
+            '$'+str(round(avg(stats[pair]['profits']), 2)),
             sec2time(round(avg(v['epoch_diffs']), 2)) if v['epoch_diffs'] else 'None',
 
         ))
         agg_epoch.append(round(avg(v['epoch_diffs']), 2) if v['epoch_diffs'] else Decimal('0.0'))
-        agg_profits.append(round(avg(stats[coin]['profits']), 2))
+        agg_profits.append(round(avg(stats[pair]['profits']), 2))
         total_open_orders += v['open_orders']
         total_done_orders += v['done_orders']
         total_error_orders += v['error_orders']
@@ -290,8 +290,8 @@ def get_stats(regex_str):
                     recent[j+1] = recent[j]
                     recent[j] = tmp
 
-        for coin, v in recent:
-            if regex_str and not re.search(regex_str, coin, re.IGNORECASE):
+        for pair, v in recent:
+            if regex_str and not re.search(regex_str, pair, re.IGNORECASE):
                 continue
             first_status = v['first_status']
             epoch = time.mktime(time.strptime(parse_datetime(first_status['created_at']), '%Y-%m-%dT%H:%M:%S'))
@@ -300,7 +300,7 @@ def get_stats(regex_str):
             cur_diff = cur_time - end_epoch
             profit = round(v['profit_usd'], 2)
             output_recent.append('    {:>8} {:>11} {:>17} {:>19}'.format(
-                coin, '$'+str(profit), sec2time(epoch_diff), str(sec2time(cur_diff))+' ago')
+                pair, '$'+str(profit), sec2time(epoch_diff), str(sec2time(cur_diff))+' ago')
             )
     return (output, output_open_orders, output_daily_profits, output_recent)
 

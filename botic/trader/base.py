@@ -40,7 +40,7 @@ class BaseTrader(BaseBot):
                 self.exchange_module))
         self.exchange = obj(self.config)
         self.exchange.authenticate()
-        configure(self.exchange, do_print=False)
+        configure(self.process_name, self.exchange, do_print=False)
 
     @abstractmethod
     def configure(self) -> None:
@@ -52,15 +52,3 @@ class BaseTrader(BaseBot):
         to fetch data and place buys/sells.
         """
 
-    def run(self) -> None:
-        """Main program loop"""
-        self._init()
-        # Throttle startups randomly
-        time.sleep(uniform(1, 5))
-        while 1:
-            if os.path.exists(self.pause_file):
-                self.logit('PAUSE')
-                time.sleep(30)
-                continue
-            self.run_trading_algorithm()
-            time.sleep(self.sleep_seconds)

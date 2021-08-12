@@ -1,8 +1,9 @@
 """Main entry point to load configuration and classes"""
 import os
 import time
-import configparser
 import importlib
+from random import uniform
+import yaml
 from .util import configure
 
 os.environ['TZ'] = 'UTC'
@@ -11,14 +12,17 @@ time.tzset()
 class UnknownTraderModuleError(Exception):
     """Unknown trader module"""
 
-class Botic:
+class DuplicateConfigurationError(Exception):
+    """Duplicate config name"""
+
+class BoticProcess:
     """Botic base class to setup and start the trader"""
     # pylint: disable=too-few-public-methods
     # pylint: disable=no-member
-    def __init__(self, config_path: str, do_print=True) -> None:
-        self.config = configparser.ConfigParser()
-        self.config.read(config_path)
-        configure(self, do_print=do_print)
+    def __init__(self, process_name: str, config: dict, do_print=True) -> None:
+        self.process_name = process_name
+        self.config = config
+        configure(process_name, self, do_print=do_print)
         self._setup_trader()
 
     def _setup_trader(self) -> None:
@@ -38,8 +42,61 @@ class Botic:
             raise UnknownTraderModuleError('Unknown trader module: {}'.format(self.trader_module))
         self.trader = obj(self.config)
         # Write config vars to trader object
-        configure(self.trader, do_print=False)
+        configure(self.process_name, self.trader, do_print=False)
+
+class Botic:
+    """Wrapper to Botic class to configure each global + yaml section"""
+    # pylint: disable=too-few-public-methods
+    # pylint: disable=no-member
+    def __init__(self, config_path: str, do_print=True) -> None:
+        self.processes = {}
+        with open(config_path) as config_stream:
+            self.config = list(yaml.safe_load_all(config_stream))
+        self._setup_processes()
+
+    def _setup_processes(self) -> None:
+        global_config = None
+        for item in self.config:
+            if 'global' in item.keys():
+                global_config = item['global']
+                break
+        if not global_config:
+            print('WARNING: No global config section found')
+        for section in self.config:
+            for name, config in section.items():
+                if name == 'global':
+                    continue
+                print('Create process:', name)
+                if global_config:
+                    for k,v in global_config.items():
+                        if not k in config:
+                            print('Insert global config:', k)
+                            config[k] = v
+                proc = BoticProcess(name, config)
+                if name in self.processes:
+                    raise DuplicateConfigurationError('Duplicate config name: {}'.format(name))
+                self.processes[name] = proc
 
     def run(self) -> None:
-        """Entry point to start the bot"""
-        self.trader.run()
+        """Entry point to start the bots"""
+        run_timer = {}
+        for name, obj in self.processes.items():
+            run_timer[name] = 0
+            obj.trader._init()
+            time.sleep(uniform(0.2, 1.5))
+
+        while 1:
+            time.sleep(1)
+            for name, obj in self.processes.items():
+                if os.path.exists(obj.pause_file):
+                    self.logit('PAUSE')
+                    continue
+                if time.time() - run_timer[name] >= obj.sleep_seconds:
+                    print('Running:', name)
+                    #obj.trader.run_trading_algorithm()
+                    run_timer[name] = time.time()
+                else:
+                    print('Pausing({} < {}): {}'.format(
+                        time.time() - run_timer[name], obj.sleep_seconds, name))
+                time.sleep(0.1)
+

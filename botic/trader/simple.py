@@ -244,13 +244,12 @@ class Simple(BaseTrader):
                 self.logit('WARNING: get_order() failed:' + str(err),
                     custom_datetime=self._time2datetime())
                 errors += 1
-                time.sleep(10)
+                time.sleep(1)
             if errors > 5:
                 self.logit('WARNING: Failed to get order. Manual intervention needed.: {}'.format(
                     order_id),
                     custom_datetime=self._time2datetime())
                 break
-            time.sleep(2)
 
         # Buy order done, now place sell
         if done:
@@ -300,7 +299,7 @@ class Simple(BaseTrader):
         else:
             self.logit('WARNING: Failed to get order status: {}'.format(order_id),
                 custom_datetime=self._time2datetime())
-        time.sleep(10)
+        time.sleep(0.5)
 
     def _run_stoploss(self, buy_order_id: t.AnyStr) -> None:
         """ Cancel sell order, place new market sell to fill immediately
@@ -344,13 +343,13 @@ class Simple(BaseTrader):
                 self.logit('WARNING: get_order() failed:' + str(err),
                     custom_datetime=self._time2datetime())
                 errors += 1
-                time.sleep(8)
+                time.sleep(1)
             if errors > 5:
                 self.logit('WARNING: Failed to get order. Manual intervention needed.: {}'.format(
                     order_id),
                     custom_datetime=self._time2datetime())
                 break
-            time.sleep(2)
+            time.sleep(1)
 
         if not done:
             self.logit(
@@ -387,7 +386,7 @@ class Simple(BaseTrader):
                     msg='WARNING: Corrupted sell order, mark as done: {}'.format(
                         info['sell_order'])
                 )
-                time.sleep(3600)
+                time.sleep(1)
                 continue
             order_get_fail = False
             try:

@@ -6,7 +6,6 @@
 """
 import sys
 import time
-import configparser
 import typing as t
 import gzip
 import datetime
@@ -19,7 +18,7 @@ class Backtest(BaseExchange):
     """Backtest"""
     # pylint: disable=too-many-instance-attributes
     # pylint: disable=no-member
-    def __init__(self, config: configparser.ConfigParser) -> None:
+    def __init__(self, config: dict) -> None:
         super().__init__(config)
         self.usd_decimal_places = 2
         self.size_decimal_places = 8
@@ -54,7 +53,7 @@ class Backtest(BaseExchange):
             'fx_stablecoin':False,
             'margin_enabled':False,
         }
-        #if self.coin != 'BTC-USD':
+        #if self.pair != 'BTC-USD':
         #    raise Exception('Currently only handles BTC-USD')
         gdata = get_data('botic', 'data/historical-btc.csv.gz')
         self._data = gzip.decompress(gdata).decode("utf-8").split('\n')

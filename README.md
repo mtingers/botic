@@ -37,7 +37,7 @@ python setup.py install
 In the project's directory, it is recommended to create a few sub-directories:
 1. `data` - state files to track orders
 2. `log` - log files
-3. `config` - configuration files
+3. `config` - configuration files in yaml format
 
 Example:
 ```
@@ -45,47 +45,62 @@ mkdir data log config
 ```
 
 ## Configuration
-Copy the [example.conf](/example.conf) to the `config/` directory. The recommendation is to name it after the
-currency (e.g. `BTC-USD` would be `config/btc.conf`)
+Copy the [example.yaml](/example.yaml) to the `config/` directory.
 
-```
-[exchange]
-exchange_module = CoinbasePro
-key = abc
-passphrase = xyz
-b64secret = 123
+```yaml
+global:
+  exchange:
+    module: CoinbasePro
+    key: xyz
+    passphrase: abc
+    b64secret: bar==
+  notify:
+    mail_host: localhost
+    mail_from: user@example.com
+    mail_to: user@example2.com
+    notify_only_sold: True
+  general:
+    log_dir: log
+    data_dir: data
+    pause_file: bot.pause
+    log_disabled: False
+  debug:
+    debug_response: False
+    debug_dir: debug
 
-[general]
-coin = BTC-USD
-sleep_seconds = 60
-log_file = log/btc.log
-data_file = data/btc.data
-pause_file = bot.pause
-log_disabled = False
+---
+btcbot:
+  trader:
+    pair: BTC-USD
+    module: Simple
+    max_outstanding_sells: 5
+    max_buys_per_hour: 10
+    sell_target: 2.0
+    buy_barrier: 2.0
+    buy_percent: 2.5
+    buy_max: 233.00
+    buy_min: 60.00
+    stoploss_enable: no
+    stoploss_percent: -7.0
+    stoploss_seconds: 86400
+    stoploss_strategy: report
 
-[trader]
-trader_module = Simple
-max_outstanding_sells = 10
-max_buys_per_hour = 10
-sell_target = 1.25
-buy_barrier = 0.5
-buy_percent = 1.0
-buy_max = 150.00
-buy_min = 35.00
-stoploss_enable = no
-stoploss_percent = -7.0
-stoploss_seconds = 86400
-stoploss_strategy = report
-
-[notify]
-mail_host = mail.example.com
-mail_from = from@example.com
-mail_to = to@example.com, other@example.com
-notify_only_sold = True
-
-[debug]
-debug_response = False
-debug_log = log/btc-debug.log
+---
+zrxbot:
+  trader:
+    pair: ZRX-USD
+    trader_module: Simple
+    max_outstanding_sells: 3
+    max_buys_per_hour: 10
+    sell_target: 3.0
+    buy_barrier: 3.0
+    buy_percent: 1.5
+    buy_max: 233.00
+    buy_min: 60.00
+    stoploss_enable: no
+    stoploss_percent: -7.0
+    stoploss_seconds: 86400
+    stoploss_strategy: report
 ```
 
 ## Trading
@@ -96,7 +111,7 @@ To start the bot, two commands exist:
 
 Example:
 ```
-boticp config/btc.conf
+boticp config/botic.yaml
 ```
 
 # Top Command

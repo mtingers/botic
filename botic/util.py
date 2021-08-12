@@ -29,7 +29,7 @@ def str2bool(value: str) -> bool:
         return value
     return value.lower() in ("yes", "true", "t", "1")
 
-def configure(obj, do_print=False) -> None:
+def configure(process_name, obj, do_print=False) -> None:
     """Calls setattr() on configuration key,val pairs from obj.config, or sets defaults from
     CONFIG_DEFAULT.
 
@@ -40,12 +40,22 @@ def configure(obj, do_print=False) -> None:
     Args:
         do_print (bool): If True, print and log non-auth configuration items
     """
+    setattr(obj, 'process_name', process_name)
     for section,items in CONFIG_DEFAULTS.items():
         for key, cast, default in items:
             val = getconf(obj.config, section, key, cast, default)
             # Special conversion to handle percent values and lists
             if key == 'mail_to':
                 val = val.split(',')
+            elif key == 'log_dir':
+                print('config: set log_file: {}/{}.log'.format(val, process_name))
+                setattr(obj, 'log_file', '{}/{}.log'.format(val, process_name))
+            elif key == 'data_dir':
+                print('config: set data_file: {}/{}.data'.format(val, process_name))
+                setattr(obj, 'data_file', '{}/{}.data'.format(val, process_name))
+            elif key == 'debug_dir':
+                print('config: set debug_file: {}/{}.debug'.format(val, process_name))
+                setattr(obj, 'debug_file', '{}/{}.debug'.format(val, process_name))
             if not (section == 'exchange' and key in ('key', 'passphrase', 'b64secret')):
                 if do_print:
                     print('config: [{}][{}] -> {}'.format(section, key, val))

@@ -11,7 +11,7 @@ def date2str(dtobj_or_str):
     """Convert date to str"""
     return str(dtobj_or_str).replace(' ', 'T').split('.')[0]+'Z'
 
-def generate_historical_csv(outfile, coin='BTC-USD', days_ago=93):
+def generate_historical_csv(outfile, pair='BTC-USD', days_ago=93):
     """Generate CSV file from coinbase get_product_historic_rates"""
     # pylint: disable=too-many-locals
     public_client = cbpro.PublicClient()
@@ -23,7 +23,7 @@ def generate_historical_csv(outfile, coin='BTC-USD', days_ago=93):
     while next_date < end_date:
         #print(next_date)
         stats = public_client.get_product_historic_rates(
-            coin,
+            pair,
             granularity=SIZE,
             start=date2str(next_date),
             end=date2str(next_date+timedelta(hours=5)))

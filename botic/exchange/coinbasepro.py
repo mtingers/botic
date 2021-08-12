@@ -1,7 +1,6 @@
 """CoinbasePro exchange module"""
 import time
 from random import uniform
-import configparser
 import typing as t
 import cbpro
 from .exceptions import ExchangeError, ExchangeGetOrdersError, ExchangeAuthError
@@ -21,7 +20,7 @@ class CoinbasePro(BaseExchange):
     """CoinbasePro exchange"""
     # pylint: disable=too-many-instance-attributes
     # pylint: disable=no-member
-    def __init__(self, config: configparser.ConfigParser) -> None:
+    def __init__(self, config: dict) -> None:
         self.usd_decimal_places = 2
         self.size_decimal_places = 8
         super().__init__(config)
@@ -49,7 +48,7 @@ class CoinbasePro(BaseExchange):
                 errors += 1
                 if error > 9:
                     raise
-                time.sleep(10)
+                time.sleep(5)
 
     def authenticate(self) -> cbpro.AuthenticatedClient:
         key = self.config['exchange'].get('key')
@@ -61,7 +60,7 @@ class CoinbasePro(BaseExchange):
         return self.client
 
     def get_price(self) -> Decimal:
-        ticker = self._wrap_client('get_product_ticker', product_id=self.coin)
+        ticker = self._wrap_client('get_product_ticker', product_id=self.pair)
         _api_response_check(ticker, ExchangeError)
         price = Decimal(ticker['price'])
         return price
@@ -81,7 +80,7 @@ class CoinbasePro(BaseExchange):
         products = self._wrap_client('get_products')
         _api_response_check(products, ExchangeProductInfoError)
         for product in products:
-            if product['id'] == self.coin:
+            if product['id'] == self.pair:
                 product_info = ProductInfo(product)
                 product_info.digest()
                 break
@@ -103,7 +102,7 @@ class CoinbasePro(BaseExchange):
         _api_response_check(orders, ExchangeGetOrdersError)
         open_sells = []
         for order in orders:
-            if order['side'] == 'sell' and order['product_id'] == self.coin:
+            if order['side'] == 'sell' and order['product_id'] == self.pair:
                 order['price'] = Decimal(order['price'])
                 order['size'] = Decimal(order['size'])
                 open_sells.append(order)
@@ -124,7 +123,7 @@ class CoinbasePro(BaseExchange):
         fixed_price = str(round(Decimal(price), self.usd_decimal_places))
         fixed_size = str(round(Decimal(size), self.size_decimal_places))
         response = self._wrap_client('place_limit_order',
-            product_id=self.coin,
+            product_id=self.pair,
             side='buy',
             size=fixed_size,
             price=fixed_price,
@@ -136,7 +135,7 @@ class CoinbasePro(BaseExchange):
         funds = str(round(Decimal(funds), self.usd_decimal_places))
         self.logit('buy_market: funds:{}'.format(funds))
         response = self._wrap_client('place_market_order',
-            product_id=self.coin,
+            product_id=self.pair,
             side='buy',
             funds=funds,
         )
@@ -148,7 +147,7 @@ class CoinbasePro(BaseExchange):
         fixed_size = str(round(Decimal(size), self.size_decimal_places))
         self.logit('sell_limit: price:{} size:{}'.format(fixed_price, fixed_size))
         response = self._wrap_client('place_limit_order',
-            product_id=self.coin,
+            product_id=self.pair,
             side='sell',
             price=fixed_price,
             size=fixed_size,
@@ -160,7 +159,7 @@ class CoinbasePro(BaseExchange):
         fixed_size = str(round(Decimal(size), self.size_decimal_places))
         self.logit('sell_market: size:{}'.format(fixed_size))
         response = self._wrap_client('place_market_order',
-            product_id=self.coin,
+            product_id=self.pair,
             side='sell',
             size=fixed_size,
         )

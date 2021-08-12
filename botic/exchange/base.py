@@ -3,7 +3,6 @@ import time
 from decimal import Decimal
 import typing as t
 from abc import abstractmethod
-import configparser
 from ..basebot import BaseBot
 
 class ProductInfo: # pylint: disable=too-few-public-methods
@@ -95,9 +94,9 @@ class BaseExchange(BaseBot):
         config_path (str): The path to the configuration file
 
     Attributes:
-        config (configparser.ConfigParser): ConfigParser object from file specified by config_path
+        config (dict): Dict of parsed yaml file config_path
     """
-    def __init__(self, config: configparser.ConfigParser) -> None:
+    def __init__(self, config: dict) -> None:
         super().__init__(config)
         self.client = None
 

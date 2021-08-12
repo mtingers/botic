@@ -1,0 +1,233 @@
+global:
+  exchange:
+    module: CoinbasePro
+    key: xyz
+    passphrase: abc
+    b64secret: bar==
+  notify:
+    mail_host: localhost
+    mail_from: user@example.com
+    mail_to: user@example2.com
+    notify_only_sold: True
+  general:
+    log_dir: log
+    data_dir: data
+    pause_file: bot.pause
+    log_disabled: False
+  debug:
+    debug_response: False
+    debug_dir: debug
+
+---
+btcbot:
+  trader:
+    pair: BTC-USD
+    module: Simple
+    max_outstanding_sells: 5
+    max_buys_per_hour: 10
+    sell_target: 2.0
+    buy_barrier: 2.0
+    buy_percent: 2.5
+    buy_max: 233.00
+    buy_min: 60.00
+    stoploss_enable: no
+    stoploss_percent: -7.0
+    stoploss_seconds: 86400
+    stoploss_strategy: report
+
+---
+zrxbot:
+  trader:
+    pair: ZRX-USD
+    trader_module: Simple
+    max_outstanding_sells: 3
+    max_buys_per_hour: 10
+    sell_target: 3.0
+    buy_barrier: 3.0
+    buy_percent: 1.5
+    buy_max: 233.00
+    buy_min: 60.00
+    stoploss_enable: no
+    stoploss_percent: -7.0
+    stoploss_seconds: 86400
+    stoploss_strategy: report
+---
+yfibot:
+  trader:
+    pair: YFI-USD
+    trader_module: Simple
+    max_outstanding_sells: 3
+    max_buys_per_hour: 10
+    sell_target: 3.0
+    buy_barrier: 3.0
+    buy_percent: 1.5
+    buy_max: 233.00
+    buy_min: 60.00
+    stoploss_enable: no
+    stoploss_percent: -7.0
+    stoploss_seconds: 86400
+    stoploss_strategy: report
+---
+xtzbot:
+  trader:
+    pair: XTZ-USD
+    trader_module: Simple
+    max_outstanding_sells: 5
+    max_buys_per_hour: 5
+    sell_target: 3.0
+    buy_barrier: 3.0
+    buy_percent: 2.5
+    buy_max: 233.00
+    buy_min: 60.00
+    stoploss_enable: no
+    stoploss_percent: -7.0
+    stoploss_seconds: 86400
+    stoploss_strategy: report
+---
+xlmbot:
+  trader:
+    pair: XLM-USD
+    trader_module: Simple
+    max_outstanding_sells: 3
+    max_buys_per_hour: 10
+    sell_target: 3.0
+    buy_barrier: 3.0
+    buy_percent: 1.5
+    buy_max: 233.00
+    buy_min: 60.00
+    stoploss_enable: no
+    stoploss_percent: -7.0
+    stoploss_seconds: 86400
+    stoploss_strategy: report
+---
+repbot:
+  trader:
+    pair: REP-USD
+    trader_module: Simple
+    max_outstanding_sells: 3
+    max_buys_per_hour: 10
+    sell_target: 3.0
+    buy_barrier: 3.0
+    buy_percent: 1.5
+    buy_max: 233.00
+    buy_min: 60.00
+    stoploss_enable: no
+    stoploss_percent: -7.0
+    stoploss_seconds: 86400
+    stoploss_strategy: report
+
+---
+mkrbot:
+  trader:
+    pair: MKR-USD
+    trader_module: Simple
+    max_outstanding_sells: 3
+    max_buys_per_hour: 10
+    sell_target: 3.0
+    buy_barrier: 3.0
+    buy_percent: 2.5
+    buy_max: 233.00
+    buy_min: 60.00
+    stoploss_enable: no
+    stoploss_percent: -7.0
+    stoploss_seconds: 86400
+    stoploss_strategy: report
+---
+ltbot:
+  trader:
+    pair: LTC-USD
+    trader_module: Simple
+    max_outstanding_sells: 5
+    max_buys_per_hour: 3
+    sell_target: 3.0
+    buy_barrier: 3.0
+    buy_percent: 1.25
+    buy_max: 233.00
+    buy_min: 30.00
+    stoploss_enable: no
+    stoploss_percent: -7.0
+    stoploss_seconds: 86400
+    stoploss_strategy: report
+---
+linkbot:
+  trader:
+    pair: LINK-USD
+    trader_module: Simple
+    max_outstanding_sells: 5
+    max_buys_per_hour: 10
+    sell_target: 3.0
+    buy_barrier: 3.0
+    buy_percent: 1.5
+    buy_max: 233.00
+    buy_min: 60.00
+    stoploss_enable: no
+    stoploss_percent: -7.0
+    stoploss_seconds: 86400
+    stoploss_strategy: report
+---
+kncbot:
+  trader:
+    pair: KNC-USD
+    trader_module: Simple
+    max_outstanding_sells: 5
+    max_buys_per_hour: 10
+    sell_target: 3.0
+    buy_barrier: 3.0
+    buy_percent: 1.5
+    buy_max: 233.00
+    buy_min: 60.00
+    stoploss_enable: no
+    stoploss_percent: -7.0
+    stoploss_seconds: 86400
+    stoploss_strategy: report
+---
+ethbot:
+  trader:
+    pair: ETH-USD
+    trader_module: Simple
+    max_outstanding_sells: 5
+    max_buys_per_hour: 10
+    sell_target: 3.0
+    buy_barrier: 3.0
+    buy_percent: 1.5
+    buy_max: 233.00
+    buy_min: 60.00
+    stoploss_enable: no
+    stoploss_percent: -7.0
+    stoploss_seconds: 86400
+    stoploss_strategy: report
+---
+eosbot:
+  trader:
+    pair: EOS-USD
+    trader_module: Simple
+    max_outstanding_sells: 5
+    max_buys_per_hour: 10
+    sell_target: 3.0
+    buy_barrier: 3.0
+    buy_percent: 2.5
+    buy_max: 233.00
+    buy_min: 60.00
+    stoploss_enable: no
+    stoploss_percent: -7.0
+    stoploss_seconds: 86400
+    stoploss_strategy: report
+---
+dashbot:
+  trader:
+    pair: DASH-USD
+    trader_module: Simple
+    max_outstanding_sells: 5
+    max_buys_per_hour: 10
+    sell_target: 3.0
+    buy_barrier: 3.0
+    buy_percent: 1.5
+    buy_max: 233.00
+    buy_min: 60.00
+    stoploss_enable: no
+    stoploss_percent: -7.0
+    stoploss_seconds: 86400
+    stoploss_strategy: report
+
+
+
