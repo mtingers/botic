@@ -96,15 +96,15 @@ class Botic:
                     run_timer[name] = time.time()
                     continue
                 if time_diff >= obj.sleep_seconds:
-                    obj.trader.logit('Running: {}'.format(name))
+                    #obj.trader.logit('Running: {}'.format(name))
                     obj.trader.run_trading_algorithm()
                     run_timer[name] = time.time()
                     time.sleep(1)
-                else:
-                    obj.trader.logit('pausing({} < {}): {}'.format(
-                        time.time() - run_timer[name], obj.sleep_seconds, name))
+                #else:
+                #    obj.trader.logit('pausing({} < {}): {}'.format(
+                #        time.time() - run_timer[name], obj.sleep_seconds, name))
                 time.sleep(0.1)
-            min_time_distance = round(min_time_distance/1.5, 2)
+            min_time_distance = round(min_time_distance, 2)
             if min_time_distance < 0:
                 min_time_distance = 1
 
