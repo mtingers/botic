@@ -80,6 +80,7 @@ class Botic:
     def run(self) -> None:
         """Entry point to start the bots"""
         run_timer = {}
+        first = True
         for name, obj in self.processes.items():
             run_timer[name] = time.time() - (obj.sleep_seconds+1)
             obj.trader._init()
@@ -96,6 +97,14 @@ class Botic:
                     run_timer[name] = time.time()
                     continue
                 if time_diff >= obj.sleep_seconds:
+                    if not first and time_diff >= obj.sleep_seconds * 1.25:
+                        obj.trader.logit(
+                            'WARNING: Lost time: took {} seconds, but sleep_seconds is {}'.format(
+                            time_diff, obj.sleep_seconds
+                        ))
+                        obj.trader.logit(
+                            'WARNING: Lost time: HINT: break config up into multiple processes'
+                        )
                     #obj.trader.logit('Running: {}'.format(name))
                     obj.trader.run_trading_algorithm()
                     run_timer[name] = time.time()
@@ -107,6 +116,7 @@ class Botic:
             min_time_distance = round(min_time_distance, 2)
             if min_time_distance < 0:
                 min_time_distance = 1
-
+            print('DEBUG_MAINLOOP_SLEEP:', min_time_distance)
             time.sleep(min_time_distance)
+            first = False
 

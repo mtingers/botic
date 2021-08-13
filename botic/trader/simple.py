@@ -144,10 +144,10 @@ class Simple(BaseTrader):
 
         # Check if USD wallet has enough available
         if self.wallet < Decimal(self.product_info.min_market_funds):
-            self.logit('WARNING: Wallet value too small (<${}): {}'.format(
-                self.product_info.min_market_funds, self.wallet),
-                custom_datetime=self._time2datetime()
-            )
+            #self.logit('WARNING: Wallet value too small (<${}): {}'.format(
+            #    self.product_info.min_market_funds, self.wallet),
+            #    custom_datetime=self._time2datetime()
+            #)
             return
 
         # Calculate & check if size is big enough (sometimes its not if wallet is too small)
@@ -156,27 +156,25 @@ class Simple(BaseTrader):
         )
         buy_size = round(Decimal(buy_amount) / self.current_price, self.size_decimal_places)
         if buy_size <= self.product_info.base_min_size:
-            self.logit('WARNING: Buy size is too small {} {} < {} wallet:{}.'.format(
-                buy_amount, buy_size, self.product_info.base_min_size, self.wallet),
-                custom_datetime=self._time2datetime()
-            )
-            self.logit('DEBUG: {}'.format(self.product_info.config),
-                custom_datetime=self._time2datetime())
+            #self.logit('WARNING: Buy size is too small {} {} < {} wallet:{}.'.format(
+            #    buy_amount, buy_size, self.product_info.base_min_size, self.wallet),
+            #    custom_datetime=self._time2datetime()
+            #)
+            #self.logit('DEBUG: {}'.format(self.product_info.config),
+            #    custom_datetime=self._time2datetime())
             buy_amount = self.buy_min
             buy_size = round(Decimal(buy_amount) / self.current_price, self.size_decimal_places)
-            self.logit('DEFAULT_BUY_SIZE_TO_MIN: {} {}'.format(buy_amount, buy_size),
-                custom_datetime=self._time2datetime())
 
         # Check if USD wallet has enough available
         if buy_amount < Decimal(self.product_info.min_market_funds):
-            self.logit('WARNING: Buy amount too small (<${}): {}'.format(
-                self.product_info.min_market_funds, buy_amount),
-                custom_datetime=self._time2datetime()
-            )
+            #self.logit('WARNING: Buy amount too small (<${}): {}'.format(
+            #    self.product_info.min_market_funds, buy_amount),
+            #    custom_datetime=self._time2datetime()
+            #)
             buy_amount = self.buy_min
             buy_size = round(Decimal(buy_amount) / self.current_price, self.size_decimal_places)
-            self.logit('DEFAULT_BUY_SIZE_TO_MIN: {} {}'.format(buy_amount, buy_size),
-                custom_datetime=self._time2datetime())
+            #self.logit('DEFAULT_BUY_SIZE_TO_MIN: {} {}'.format(buy_amount, buy_size),
+            #    custom_datetime=self._time2datetime())
 
         # Make sure buy_amount is within buy_min/max
         if buy_amount < self.buy_min:
@@ -189,7 +187,6 @@ class Simple(BaseTrader):
             buy_amount = self.buy_max
 
         if Decimal(self.wallet) < Decimal(self.buy_min):
-            self.logit('INSUFFICIENT_FUNDS', custom_datetime=self._time2datetime())
             return
 
         # adjust size to fit with fee

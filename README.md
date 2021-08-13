@@ -60,6 +60,7 @@ global:
     mail_to: user@example2.com
     notify_only_sold: True
   general:
+    sleep_seconds: 60
     log_dir: log
     data_dir: data
     pause_file: bot.pause
