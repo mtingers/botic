@@ -116,7 +116,6 @@ class Botic:
             min_time_distance = round(min_time_distance, 2)
             if min_time_distance < 0:
                 min_time_distance = 1
-            print('DEBUG_MAINLOOP_SLEEP:', min_time_distance)
             time.sleep(min_time_distance)
             first = False
 
