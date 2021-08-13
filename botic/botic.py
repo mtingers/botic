@@ -81,22 +81,32 @@ class Botic:
         """Entry point to start the bots"""
         run_timer = {}
         for name, obj in self.processes.items():
-            run_timer[name] = 0
+            run_timer[name] = time.time() - (obj.sleep_seconds+1)
             obj.trader._init()
             time.sleep(uniform(0.2, 1.5))
-
         while 1:
-            time.sleep(1)
+            min_time_distance = 200.00
             for name, obj in self.processes.items():
+                time_diff = time.time() - run_timer[name]
+                sleep_diff = obj.sleep_seconds - time_diff
+                if sleep_diff < min_time_distance:
+                    min_time_distance = sleep_diff
                 if os.path.exists(obj.pause_file):
-                    self.logit('PAUSE')
-                    continue
-                if time.time() - run_timer[name] >= obj.sleep_seconds:
-                    print('Running:', name)
-                    #obj.trader.run_trading_algorithm()
+                    obj.trader.logit('PAUSE')
                     run_timer[name] = time.time()
+                    continue
+                if time_diff >= obj.sleep_seconds:
+                    obj.trader.logit('Running: {}'.format(name))
+                    obj.trader.run_trading_algorithm()
+                    run_timer[name] = time.time()
+                    time.sleep(1)
                 else:
-                    print('Pausing({} < {}): {}'.format(
+                    obj.trader.logit('pausing({} < {}): {}'.format(
                         time.time() - run_timer[name], obj.sleep_seconds, name))
                 time.sleep(0.1)
+            min_time_distance = round(min_time_distance/1.5, 2)
+            if min_time_distance < 0:
+                min_time_distance = 1
+
+            time.sleep(min_time_distance)
 

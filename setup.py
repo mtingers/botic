@@ -4,7 +4,7 @@ from setuptools import find_packages
 
 setup(
     name='Botic',
-    version='1.1.4',
+    version='2.0.0',
     author='Matth Ingersoll',
     author_email='matth@mtingers.com',
     packages=find_packages(),
@@ -15,6 +15,7 @@ setup(
     install_requires=[
         'filelock>=3.0.12',
         'cbpro>=1.1.4',
+        'pyyaml',
     ],
     entry_points={
         'console_scripts': [
